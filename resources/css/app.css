@@ -1,21 +1,184 @@
 @import 'tailwindcss';
 
-@theme {
-    --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+/* ===================================================================
+   THEME DESIGN TOKENS
+   - :root = mode clair (light)
+   - .dark = mode sombre (dark) — valeurs actuelles de l'application
+   =================================================================== */
+
+:root {
+    /* ── Surfaces (backgrounds) ── */
+    --surface: #ffffff;
+    --surface-raised: #f8fafc;       /* slate-50 */
+    --surface-elevated: #f1f5f9;     /* slate-100 */
+    --surface-overlay: #e2e8f0;      /* slate-200 */
+
+    /* ── Text (foreground) ── */
+    --on-surface: #0f172a;           /* slate-900 */
+    --on-surface-secondary: #334155; /* slate-700 */
+    --on-surface-muted: #64748b;     /* slate-500 */
+    --on-surface-faint: #94a3b8;     /* slate-400 */
+
+    /* ── Borders / outlines ── */
+    --edge: #e2e8f0;                 /* slate-200 */
+    --edge-strong: #cbd5e1;          /* slate-300 */
+
+    /* ── Accent (indigo) ── */
+    --accent: #4f46e5;               /* indigo-600 */
+    --accent-light: #6366f1;         /* indigo-500 */
+    --accent-bg: #eef2ff;            /* indigo-50 */
+    --accent-border: #c7d2fe;        /* indigo-200 */
+
+    /* ── Positive (emerald) ── */
+    --positive: #059669;             /* emerald-600 */
+    --positive-light: #10b981;       /* emerald-500 */
+    --positive-bg: #ecfdf5;          /* emerald-50 */
+    --positive-border: #a7f3d0;      /* emerald-200 */
+
+    /* ── Negative (rose) ── */
+    --negative: #e11d48;             /* rose-600 */
+    --negative-light: #f43f5e;       /* rose-500 */
+    --negative-bg: #fff1f2;          /* rose-50 */
+    --negative-border: #fecdd3;      /* rose-200 */
+
+    /* ── Warning (amber) ── */
+    --warning: #d97706;              /* amber-600 */
+    --warning-bg: #fffbeb;           /* amber-50 */
+    --warning-border: #fde68a;       /* amber-200 */
+
+    /* ── Brand gradient (logo text) ── */
+    --grad-from: #0f172a;
+    --grad-via: #334155;
+    --grad-to: #64748b;
+
+    /* ── Scrollbar ── */
+    --scrollbar-track: rgba(241, 245, 249, 0.6);
+    --scrollbar-thumb: rgba(203, 213, 225, 0.8);
+    --scrollbar-thumb-hover: rgba(99, 102, 241, 0.8);
+
+    /* ── Selection ── */
+    --selection-bg: #6366f1;
+    --selection-text: #ffffff;
 }
 
-/* Custom Scrollbars */
+.dark {
+    /* ── Surfaces ── */
+    --surface: #020617;              /* slate-950 */
+    --surface-raised: #0f172a;       /* slate-900 */
+    --surface-elevated: #1e293b;     /* slate-800 */
+    --surface-overlay: #334155;      /* slate-700 */
+
+    /* ── Text ── */
+    --on-surface: #f1f5f9;           /* slate-100 */
+    --on-surface-secondary: #cbd5e1; /* slate-300 */
+    --on-surface-muted: #94a3b8;     /* slate-400 */
+    --on-surface-faint: #64748b;     /* slate-500 */
+
+    /* ── Borders ── */
+    --edge: #1e293b;                 /* slate-800 */
+    --edge-strong: #334155;          /* slate-700 */
+
+    /* ── Accent ── */
+    --accent: #818cf8;               /* indigo-400 */
+    --accent-light: #a5b4fc;         /* indigo-300 */
+    --accent-bg: rgba(79, 70, 229, 0.15);
+    --accent-border: rgba(99, 102, 241, 0.3);
+
+    /* ── Positive ── */
+    --positive: #34d399;             /* emerald-400 */
+    --positive-light: #6ee7b7;       /* emerald-300 */
+    --positive-bg: rgba(6, 78, 59, 0.6);
+    --positive-border: rgba(16, 185, 129, 0.4);
+
+    /* ── Negative ── */
+    --negative: #fb7185;             /* rose-400 */
+    --negative-light: #fda4af;       /* rose-300 */
+    --negative-bg: rgba(76, 5, 25, 0.6);
+    --negative-border: rgba(244, 63, 94, 0.4);
+
+    /* ── Warning ── */
+    --warning: #fbbf24;              /* amber-400 */
+    --warning-bg: rgba(120, 53, 15, 0.6);
+    --warning-border: rgba(245, 158, 11, 0.4);
+
+    /* ── Brand gradient ── */
+    --grad-from: #ffffff;
+    --grad-via: #e2e8f0;
+    --grad-to: #94a3b8;
+
+    /* ── Scrollbar ── */
+    --scrollbar-track: rgba(15, 23, 42, 0.6);
+    --scrollbar-thumb: rgba(51, 65, 85, 0.8);
+    --scrollbar-thumb-hover: rgba(99, 102, 241, 0.8);
+}
+
+/* ===================================================================
+   REGISTER TOKENS AS TAILWIND COLORS (Tailwind v4 @theme)
+   This allows usage like: bg-surface, text-on-surface, border-edge, etc.
+   Opacity modifiers work: bg-surface-raised/80, border-edge/60
+   =================================================================== */
+@theme {
+    --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+
+    --color-surface: var(--surface);
+    --color-surface-raised: var(--surface-raised);
+    --color-surface-elevated: var(--surface-elevated);
+    --color-surface-overlay: var(--surface-overlay);
+
+    --color-on-surface: var(--on-surface);
+    --color-on-surface-secondary: var(--on-surface-secondary);
+    --color-on-surface-muted: var(--on-surface-muted);
+    --color-on-surface-faint: var(--on-surface-faint);
+
+    --color-edge: var(--edge);
+    --color-edge-strong: var(--edge-strong);
+
+    --color-accent: var(--accent);
+    --color-accent-light: var(--accent-light);
+    --color-accent-bg: var(--accent-bg);
+    --color-accent-border: var(--accent-border);
+
+    --color-positive: var(--positive);
+    --color-positive-light: var(--positive-light);
+    --color-positive-bg: var(--positive-bg);
+    --color-positive-border: var(--positive-border);
+
+    --color-negative: var(--negative);
+    --color-negative-light: var(--negative-light);
+    --color-negative-bg: var(--negative-bg);
+    --color-negative-border: var(--negative-border);
+
+    --color-warning: var(--warning);
+    --color-warning-bg: var(--warning-bg);
+    --color-warning-border: var(--warning-border);
+
+    --color-grad-from: var(--grad-from);
+    --color-grad-via: var(--grad-via);
+    --color-grad-to: var(--grad-to);
+}
+
+/* ===================================================================
+   CUSTOM SCROLLBARS (theme-aware)
+   =================================================================== */
 ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
 }
 ::-webkit-scrollbar-track {
-    background: rgba(15, 23, 42, 0.6);
+    background: var(--scrollbar-track);
 }
 ::-webkit-scrollbar-thumb {
-    background: rgba(51, 65, 85, 0.8);
+    background: var(--scrollbar-thumb);
     border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(99, 102, 241, 0.8);
+    background: var(--scrollbar-thumb-hover);
+}
+
+/* ===================================================================
+   SELECTION (theme-aware)
+   =================================================================== */
+::selection {
+    background-color: var(--selection-bg);
+    color: var(--selection-text);
 }

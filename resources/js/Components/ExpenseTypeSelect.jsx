@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+﻿import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { ChevronDown, Check, Search, X } from 'lucide-react';
 
 export default function ExpenseTypeSelect({
@@ -62,7 +62,7 @@ export default function ExpenseTypeSelect({
                 disabled={disabled}
                 className={`w-full text-xs font-medium rounded-xl px-3 py-2 border transition duration-150 flex items-center justify-between gap-2 cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-indigo-500/50 ${
                     selectedType
-                        ? 'bg-slate-900/90 border-slate-700/80 text-slate-200 hover:border-slate-600 hover:bg-slate-800/80'
+                        ? 'bg-surface-raised/90 border-edge-strong/80 text-on-surface hover:border-edge-strong hover:bg-surface-elevated/80'
                         : 'bg-amber-950/20 border-amber-500/30 text-amber-300 hover:bg-amber-950/40 hover:border-amber-500/50'
                 }`}
                 style={{
@@ -77,7 +77,7 @@ export default function ExpenseTypeSelect({
                                 className="w-3 h-3 rounded-full shrink-0 shadow-sm ring-1 ring-white/20"
                                 style={{ backgroundColor: selectedType.color || '#6366f1' }}
                             />
-                            <span className="font-semibold text-slate-100 truncate">{selectedType.name}</span>
+                            <span className="font-semibold text-on-surface truncate">{selectedType.name}</span>
                         </>
                     ) : (
                         <>
@@ -87,32 +87,32 @@ export default function ExpenseTypeSelect({
                     )}
                 </div>
                 <ChevronDown
-                    className={`w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform duration-200 ${
-                        isOpen ? 'rotate-180 text-indigo-400' : ''
+                    className={`w-3.5 h-3.5 text-on-surface-muted shrink-0 transition-transform duration-200 ${
+                        isOpen ? 'rotate-180 text-accent' : ''
                     }`}
                 />
             </button>
 
             {/* Dropdown Menu Popover */}
             {isOpen && (
-                <div className="absolute left-0 top-full mt-1.5 w-64 max-w-[280px] bg-slate-900/95 border border-slate-700/90 rounded-2xl shadow-2xl backdrop-blur-md p-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
+                <div className="absolute left-0 top-full mt-1.5 w-64 max-w-[280px] bg-surface-raised/95 border border-edge-strong/90 rounded-2xl shadow-2xl backdrop-blur-md p-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
                     {/* Search input if items > 4 */}
                     {expenseTypes.length > 4 && (
                         <div className="p-1 mb-1 relative">
-                            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+                            <Search className="w-3.5 h-3.5 text-on-surface-muted absolute left-3 top-2.5" />
                             <input
                                 ref={searchInputRef}
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Rechercher une catégorie..."
-                                className="w-full bg-slate-950/80 border border-slate-800 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                                className="w-full bg-surface/80 border border-edge rounded-xl pl-8 pr-3 py-1.5 text-xs text-on-surface placeholder-on-surface-faint focus:outline-none focus:border-indigo-500"
                             />
                             {searchQuery && (
                                 <button
                                     type="button"
                                     onClick={() => setSearchQuery('')}
-                                    className="absolute right-2.5 top-2.5 text-slate-400 hover:text-white"
+                                    className="absolute right-2.5 top-2.5 text-on-surface-muted hover:text-white"
                                 >
                                     <X className="w-3 h-3" />
                                 </button>
@@ -127,22 +127,22 @@ export default function ExpenseTypeSelect({
                             onClick={() => handleSelect(null)}
                             className={`w-full px-3 py-2 rounded-xl text-xs font-medium transition flex items-center justify-between cursor-pointer ${
                                 !value
-                                    ? 'bg-indigo-500/15 text-amber-300 font-semibold border border-indigo-500/30'
-                                    : 'text-amber-300/80 hover:bg-slate-800/80 hover:text-amber-200'
+                                    ? 'bg-indigo-500/15 text-amber-300 font-semibold border border-accent-border'
+                                    : 'text-amber-300/80 hover:bg-surface-elevated/80 hover:text-amber-200'
                             }`}
                         >
                             <div className="flex items-center space-x-2.5 truncate">
                                 <span className="w-3 h-3 rounded-full shrink-0 border border-dashed border-amber-400/70 bg-amber-400/20" />
                                 <span className="italic">{placeholder}</span>
                             </div>
-                            {!value && <Check className="w-3.5 h-3.5 text-amber-400 shrink-0 ml-2" />}
+                            {!value && <Check className="w-3.5 h-3.5 text-warning shrink-0 ml-2" />}
                         </button>
 
-                        <div className="my-1 border-t border-slate-800/80" />
+                        <div className="my-1 border-t border-edge/80" />
 
                         {/* List of Expense Types */}
                         {filteredTypes.length === 0 ? (
-                            <div className="px-3 py-3 text-center text-xs text-slate-500 italic">
+                            <div className="px-3 py-3 text-center text-xs text-on-surface-faint italic">
                                 Aucune catégorie trouvée
                             </div>
                         ) : (
@@ -156,8 +156,8 @@ export default function ExpenseTypeSelect({
                                         onClick={() => handleSelect(type.id)}
                                         className={`w-full px-3 py-2 rounded-xl text-xs font-medium transition flex items-center justify-between cursor-pointer ${
                                             isSelected
-                                                ? 'bg-indigo-600/20 text-white font-semibold border border-indigo-500/40 shadow-sm'
-                                                : 'text-slate-200 hover:bg-slate-800/90 hover:text-white'
+                                                ? 'bg-indigo-600/20 text-white font-semibold border border-accent-border shadow-sm'
+                                                : 'text-on-surface hover:bg-surface-elevated/90 hover:text-white'
                                         }`}
                                     >
                                         <div className="flex items-center space-x-2.5 truncate">
@@ -169,7 +169,7 @@ export default function ExpenseTypeSelect({
                                             <span className="truncate">{type.name}</span>
                                         </div>
                                         {isSelected && (
-                                            <Check className="w-3.5 h-3.5 text-indigo-400 shrink-0 ml-2" />
+                                            <Check className="w-3.5 h-3.5 text-accent shrink-0 ml-2" />
                                         )}
                                     </button>
                                 );

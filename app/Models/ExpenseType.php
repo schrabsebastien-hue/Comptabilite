@@ -13,6 +13,11 @@ class ExpenseType extends Model
     protected $fillable = [
         'name',
         'color',
+        'position',
+    ];
+
+    protected $casts = [
+        'position' => 'integer',
     ];
 
     public function operations(): HasMany

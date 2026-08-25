@@ -46,7 +46,7 @@ class OperationController extends Controller
             ->orderBy('id', 'desc')
             ->get();
 
-        $expenseTypes = ExpenseType::orderBy('name')->get();
+        $expenseTypes = ExpenseType::orderBy('position')->orderBy('name')->get();
 
         // Financial stats
         $totalCredits = (float) $operations->where('amount', '>', 0)->sum('amount');

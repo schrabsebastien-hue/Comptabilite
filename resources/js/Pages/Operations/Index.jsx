@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+﻿import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import AppLayout from '../../Layouts/AppLayout';
 import ExpenseTypeSelect from '../../Components/ExpenseTypeSelect';
@@ -35,7 +35,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
     const [cellValues, setCellValues] = useState({});
 
     // View Mode: 'table' (flat table) or 'grouped' (Google Sheets / accordion grouping)
-    const [viewMode, setViewMode] = useState('grouped'); // default to grouped as requested or user choice
+    const [viewMode, setViewMode] = useState('table'); // default to flat table as requested
     const [collapsedGroups, setCollapsedGroups] = useState([]);
     const [groupSortKey, setGroupSortKey] = useState('expense_desc'); // 'name_asc' | 'expense_desc' | 'count_desc'
 
@@ -450,8 +450,8 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
         return (
             <tr
                 key={op.id}
-                className={`hover:bg-slate-800/40 transition-colors ${
-                    isSelected ? 'bg-indigo-500/5' : isGrouped ? 'bg-slate-900/30' : ''
+                className={`hover:bg-surface-elevated/40 transition-colors ${
+                    isSelected ? 'bg-indigo-500/5' : isGrouped ? 'bg-surface-raised/30' : ''
                 }`}
                 style={
                     isGrouped && groupColor
@@ -460,22 +460,22 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                 }
             >
                 {/* Checkbox */}
-                <td className={`p-4 text-center border-r border-slate-800/40 ${isGrouped ? 'pl-6' : ''}`}>
+                <td className={`p-4 text-center border-r border-edge/40 ${isGrouped ? 'pl-6' : ''}`}>
                     <input
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => handleSelectOne(op.id)}
-                        className="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                        className="rounded border-edge-strong bg-surface-raised text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                     />
                 </td>
 
                 {/* Date */}
-                <td className="p-4 text-slate-300 font-mono text-xs whitespace-nowrap border-r border-slate-800/40">
+                <td className="p-4 text-on-surface-secondary font-mono text-xs whitespace-nowrap border-r border-edge/40">
                     {formatDate(op.date)}
                 </td>
 
                 {/* Type de dépense (Custom Selectable Component) */}
-                <td className="p-4 border-r border-slate-800/40 min-w-[210px]">
+                <td className="p-4 border-r border-edge/40 min-w-[210px]">
                     <ExpenseTypeSelect
                         value={op.expense_type_id}
                         expenseTypes={expenseTypes}
@@ -484,7 +484,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                 </td>
 
                 {/* Intitulé (Editable) */}
-                <td className="p-4 border-r border-slate-800/40">
+                <td className="p-4 border-r border-edge/40">
                     {editingCell?.id === op.id && editingCell?.field === 'label' ? (
                         <div className="flex items-center space-x-1">
                             <input
@@ -500,7 +500,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                 }
                                 onKeyDown={(e) => handleCellKeyDown(e, op.id, 'label')}
                                 onBlur={() => handleSaveCell(op.id, 'label')}
-                                className="w-full bg-slate-950 border border-indigo-500 text-white rounded px-2 py-1 text-xs focus:outline-none"
+                                className="w-full bg-surface border border-indigo-500 text-white rounded px-2 py-1 text-xs focus:outline-none"
                             />
                         </div>
                     ) : (
@@ -509,7 +509,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                 setEditingCell({ id: op.id, field: 'label' });
                                 setCellValues({ ...cellValues, [`${op.id}-label`]: op.label });
                             }}
-                            className="text-slate-200 cursor-pointer hover:bg-slate-800/80 px-2 py-1 rounded transition flex items-center justify-between group"
+                            className="text-on-surface cursor-pointer hover:bg-surface-elevated/80 px-2 py-1 rounded transition flex items-center justify-between group"
                             title="Cliquer pour modifier"
                         >
                             <span className="truncate">{op.label}</span>
@@ -518,12 +518,12 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                 </td>
 
                 {/* Montant */}
-                <td className="p-4 text-right whitespace-nowrap border-r border-slate-800/40">
+                <td className="p-4 text-right whitespace-nowrap border-r border-edge/40">
                     <span
                         className={`inline-block px-2.5 py-1 rounded-lg text-xs font-mono font-bold ${
                             isDebit
-                                ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                                : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                ? 'bg-negative/10 text-negative border border-rose-500/20'
+                                : 'bg-positive/10 text-positive border border-emerald-500/20'
                         }`}
                     >
                         {!isDebit && '+'}
@@ -532,7 +532,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                 </td>
 
                 {/* Commentaires (Editable) */}
-                <td className="p-4 border-r border-slate-800/40">
+                <td className="p-4 border-r border-edge/40">
                     {editingCell?.id === op.id && editingCell?.field === 'comment' ? (
                         <div className="flex items-center space-x-1">
                             <input
@@ -548,7 +548,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                 }
                                 onKeyDown={(e) => handleCellKeyDown(e, op.id, 'comment')}
                                 onBlur={() => handleSaveCell(op.id, 'comment')}
-                                className="w-full bg-slate-950 border border-indigo-500 text-white rounded px-2 py-1 text-xs focus:outline-none"
+                                className="w-full bg-surface border border-indigo-500 text-white rounded px-2 py-1 text-xs focus:outline-none"
                             />
                         </div>
                     ) : (
@@ -557,10 +557,10 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                 setEditingCell({ id: op.id, field: 'comment' });
                                 setCellValues({ ...cellValues, [`${op.id}-comment`]: op.comment || '' });
                             }}
-                            className="text-slate-400 cursor-pointer hover:bg-slate-800/80 px-2 py-1 rounded transition flex items-center justify-between text-xs"
+                            className="text-on-surface-muted cursor-pointer hover:bg-surface-elevated/80 px-2 py-1 rounded transition flex items-center justify-between text-xs"
                             title="Cliquer pour modifier"
                         >
-                            <span className="truncate">{op.comment || <span className="italic text-slate-600">Aucun commentaire</span>}</span>
+                            <span className="truncate">{op.comment || <span className="italic text-on-surface-faint">Aucun commentaire</span>}</span>
                         </div>
                     )}
                 </td>
@@ -569,7 +569,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                 <td className="p-4 text-center">
                     <button
                         onClick={() => handleDeleteOne(op.id)}
-                        className="text-slate-500 hover:text-rose-400 p-1.5 rounded-lg hover:bg-rose-500/10 transition cursor-pointer"
+                        className="text-on-surface-faint hover:text-negative p-1.5 rounded-lg hover:bg-negative/10 transition cursor-pointer"
                         title="Supprimer"
                     >
                         <Trash2 className="w-4 h-4" />
@@ -598,19 +598,19 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight text-white flex items-center space-x-3 flex-wrap gap-y-2">
                             <span>Liste des opérations</span>
-                            <span className="text-xs px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 font-medium flex items-center space-x-1.5">
+                            <span className="text-xs px-2.5 py-1 rounded-full bg-indigo-500/10 text-accent border border-accent-border font-medium flex items-center space-x-1.5">
                                 <span>{currentStats.totalCount} / {stats.totalCount} affichée(s)</span>
                                 {formattedSelectedMonthName && (
                                     <span className="inline-flex items-center space-x-1 ml-1 px-2 py-0.5 rounded-md bg-indigo-600 text-white font-normal shadow-sm">
                                         <span>Mois : {formattedSelectedMonthName}</span>
-                                        <button onClick={() => setSelectedMonth(null)} className="hover:text-slate-200 ml-0.5 cursor-pointer">
+                                        <button onClick={() => setSelectedMonth(null)} className="hover:text-on-surface ml-0.5 cursor-pointer">
                                             <X className="w-3 h-3" />
                                         </button>
                                     </span>
                                 )}
                             </span>
                         </h1>
-                        <p className="text-sm text-slate-400 mt-1">
+                        <p className="text-sm text-on-surface-muted mt-1">
                             Filtrez les colonnes façon Excel, triez et catégorisez vos opérations bancaires.
                         </p>
                     </div>
@@ -653,48 +653,48 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                 {/* Financial Summary KPI Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {/* Total Credits */}
-                    <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 backdrop-blur-sm flex items-center justify-between relative overflow-hidden">
+                    <div className="bg-surface-raised/60 border border-edge rounded-2xl p-5 backdrop-blur-sm flex items-center justify-between relative overflow-hidden">
                         <div className="space-y-1">
-                            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                            <span className="text-xs font-semibold text-on-surface-muted uppercase tracking-wider">
                                 Total Recettes (Crédit)
                             </span>
-                            <div className="text-2xl font-extrabold text-emerald-400">
+                            <div className="text-2xl font-extrabold text-positive">
                                 +{formatAmount(currentStats.totalCredits)}
                             </div>
                         </div>
-                        <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-400">
+                        <div className="p-3 rounded-2xl bg-positive/10 text-positive">
                             <TrendingUp className="w-6 h-6" />
                         </div>
                         <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl pointer-events-none" />
                     </div>
 
                     {/* Total Debits */}
-                    <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 backdrop-blur-sm flex items-center justify-between relative overflow-hidden">
+                    <div className="bg-surface-raised/60 border border-edge rounded-2xl p-5 backdrop-blur-sm flex items-center justify-between relative overflow-hidden">
                         <div className="space-y-1">
-                            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                            <span className="text-xs font-semibold text-on-surface-muted uppercase tracking-wider">
                                 Total Dépenses (Débit)
                             </span>
-                            <div className="text-2xl font-extrabold text-rose-400">
+                            <div className="text-2xl font-extrabold text-negative">
                                 {formatAmount(currentStats.totalDebits)}
                             </div>
                         </div>
-                        <div className="p-3 rounded-2xl bg-rose-500/10 text-rose-400">
+                        <div className="p-3 rounded-2xl bg-negative/10 text-negative">
                             <TrendingDown className="w-6 h-6" />
                         </div>
                         <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-rose-500/5 rounded-full blur-xl pointer-events-none" />
                     </div>
 
                     {/* Net Balance */}
-                    <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 backdrop-blur-sm flex items-center justify-between relative overflow-hidden sm:col-span-2 lg:col-span-1">
+                    <div className="bg-surface-raised/60 border border-edge rounded-2xl p-5 backdrop-blur-sm flex items-center justify-between relative overflow-hidden sm:col-span-2 lg:col-span-1">
                         <div className="space-y-1">
-                            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                            <span className="text-xs font-semibold text-on-surface-muted uppercase tracking-wider">
                                 Solde Net Filtré
                             </span>
-                            <div className={`text-2xl font-extrabold ${currentStats.netBalance >= 0 ? 'text-indigo-400' : 'text-amber-400'}`}>
+                            <div className={`text-2xl font-extrabold ${currentStats.netBalance >= 0 ? 'text-accent' : 'text-warning'}`}>
                                 {formatAmount(currentStats.netBalance)}
                             </div>
                         </div>
-                        <div className="p-3 rounded-2xl bg-indigo-500/10 text-indigo-400">
+                        <div className="p-3 rounded-2xl bg-indigo-500/10 text-accent">
                             <Wallet className="w-6 h-6" />
                         </div>
                         <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-indigo-500/5 rounded-full blur-xl pointer-events-none" />
@@ -702,30 +702,30 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                 </div>
 
                 {/* Global Search & Active Filters Bar */}
-                <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex flex-col xl:flex-row items-center justify-between gap-4">
+                <div className="bg-surface-raised/80 border border-edge rounded-2xl p-4 flex flex-col xl:flex-row items-center justify-between gap-4">
                     {/* Global search */}
                     <div className="relative w-full xl:w-80">
-                        <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                        <Search className="w-4 h-4 text-on-surface-muted absolute left-3.5 top-3" />
                         <input
                             type="text"
                             placeholder="Recherche globale (intitulé, commentaire, type)..."
                             value={globalSearch}
                             onChange={(e) => setGlobalSearch(e.target.value)}
-                            className="w-full bg-slate-950/80 border border-slate-800 rounded-xl pl-10 pr-3 py-2 text-sm text-slate-200 placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition"
+                            className="w-full bg-surface/80 border border-edge rounded-xl pl-10 pr-3 py-2 text-sm text-on-surface placeholder-on-surface-muted focus:outline-none focus:border-indigo-500 transition"
                         />
                     </div>
 
                     {/* View Mode Switcher & Group Controls */}
                     <div className="flex items-center flex-wrap gap-2.5 w-full xl:w-auto justify-between xl:justify-end text-xs">
                         {/* Toggle Mode: Grouped (Google Sheets) vs Table */}
-                        <div className="inline-flex items-center p-1 bg-slate-950/90 rounded-xl border border-slate-800 shrink-0">
+                        <div className="inline-flex items-center p-1 bg-surface/90 rounded-xl border border-edge shrink-0">
                             <button
                                 type="button"
                                 onClick={() => setViewMode('grouped')}
                                 className={`inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer ${
                                     viewMode === 'grouped'
                                         ? 'bg-indigo-600 text-white shadow-md'
-                                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                                        : 'text-on-surface-muted hover:text-on-surface hover:bg-surface-elevated/50'
                                 }`}
                                 title="Afficher les opérations regroupées par type de dépense (style Google Sheets)"
                             >
@@ -738,7 +738,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                 className={`inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer ${
                                     viewMode === 'table'
                                         ? 'bg-indigo-600 text-white shadow-md'
-                                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                                        : 'text-on-surface-muted hover:text-on-surface hover:bg-surface-elevated/50'
                                 }`}
                                 title="Affichage tableau standard à plat"
                             >
@@ -753,19 +753,19 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                 <button
                                     type="button"
                                     onClick={expandAllGroups}
-                                    className="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition border border-slate-700/80 cursor-pointer text-xs font-medium"
+                                    className="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-surface-elevated/80 hover:bg-surface-overlay text-on-surface-secondary hover:text-white transition border border-edge-strong/80 cursor-pointer text-xs font-medium"
                                     title="Déplier toutes les catégories"
                                 >
-                                    <ChevronsUpDown className="w-3.5 h-3.5 text-indigo-400" />
+                                    <ChevronsUpDown className="w-3.5 h-3.5 text-accent" />
                                     <span>Tout déplier</span>
                                 </button>
                                 <button
                                     type="button"
                                     onClick={collapseAllGroups}
-                                    className="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition border border-slate-700/80 cursor-pointer text-xs font-medium"
+                                    className="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-surface-elevated/80 hover:bg-surface-overlay text-on-surface-secondary hover:text-white transition border border-edge-strong/80 cursor-pointer text-xs font-medium"
                                     title="Replier toutes les catégories"
                                 >
-                                    <ChevronsDownUp className="w-3.5 h-3.5 text-indigo-400" />
+                                    <ChevronsDownUp className="w-3.5 h-3.5 text-accent" />
                                     <span>Tout replier</span>
                                 </button>
 
@@ -774,7 +774,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                     <select
                                         value={groupSortKey}
                                         onChange={(e) => setGroupSortKey(e.target.value)}
-                                        className="bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer font-medium"
+                                        className="bg-surface border border-edge rounded-xl px-2.5 py-1.5 text-xs text-on-surface-secondary focus:outline-none focus:border-indigo-500 cursor-pointer font-medium"
                                         title="Trier les catégories"
                                     >
                                         <option value="expense_desc">Dépenses (décroissant)</option>
@@ -789,7 +789,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                         {selectedIds.length > 0 && (
                             <button
                                 onClick={handleBulkDelete}
-                                className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-rose-500/15 text-rose-300 border border-rose-500/30 hover:bg-rose-500/25 transition cursor-pointer font-medium"
+                                className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-rose-500/15 text-negative-light border border-rose-500/30 hover:bg-rose-500/25 transition cursor-pointer font-medium"
                             >
                                 <Trash2 className="w-3.5 h-3.5" />
                                 <span>Supprimer ({selectedIds.length})</span>
@@ -800,9 +800,9 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                         {hasAnyActiveFilters && (
                             <button
                                 onClick={handleClearAllFilters}
-                                className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white transition cursor-pointer font-medium border border-slate-700"
+                                className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-surface-elevated text-on-surface-secondary hover:bg-surface-overlay hover:text-white transition cursor-pointer font-medium border border-edge-strong"
                             >
-                                <RotateCcw className="w-3.5 h-3.5 text-indigo-400" />
+                                <RotateCcw className="w-3.5 h-3.5 text-accent" />
                                 <span>Effacer filtres</span>
                             </button>
                         )}
@@ -810,15 +810,15 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                 </div>
 
                 {/* Excel & Google Sheets Datatable */}
-                <div className="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden shadow-xl backdrop-blur-sm relative">
+                <div className="bg-surface-raised/60 border border-edge rounded-2xl overflow-hidden shadow-xl backdrop-blur-sm relative">
                     {filteredOperations.length === 0 ? (
                         <div className="py-16 px-4 text-center space-y-4">
-                            <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto border border-indigo-500/20">
+                            <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 text-accent flex items-center justify-center mx-auto border border-accent-border">
                                 <FileSpreadsheet className="w-8 h-8" />
                             </div>
                             <div className="max-w-md mx-auto space-y-2">
                                 <h3 className="text-base font-semibold text-white">Aucune opération trouvée</h3>
-                                <p className="text-xs text-slate-400">
+                                <p className="text-xs text-on-surface-muted">
                                     {hasAnyActiveFilters
                                         ? 'Aucun élément ne correspond à vos filtres de colonnes ou recherche.'
                                         : 'Importez votre premier fichier .xls bancaire pour remplir le tableau des opérations.'}
@@ -826,7 +826,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                 {hasAnyActiveFilters && (
                                     <button
                                         onClick={handleClearAllFilters}
-                                        className="mt-2 inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 text-xs font-medium"
+                                        className="mt-2 inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-indigo-600/20 text-accent border border-accent-border text-xs font-medium"
                                     >
                                         <RotateCcw className="w-3.5 h-3.5" />
                                         <span>Réinitialiser les filtres</span>
@@ -837,25 +837,25 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                     ) : (
                         <div className="overflow-x-auto min-h-[400px]">
                             <table className="w-full text-left text-sm border-collapse">
-                                <thead className="bg-slate-950/90 border-b border-slate-800 text-xs font-semibold tracking-wider text-slate-300 select-none sticky top-0 z-20 backdrop-blur">
+                                <thead className="bg-surface/90 border-b border-edge text-xs font-semibold tracking-wider text-on-surface-secondary select-none sticky top-0 z-20 backdrop-blur">
                                     <tr>
                                         {/* Checkbox Select All */}
-                                        <th className="p-4 w-10 text-center border-r border-slate-800/60">
+                                        <th className="p-4 w-10 text-center border-r border-edge/60">
                                             <input
                                                 type="checkbox"
                                                 onChange={handleSelectAll}
                                                 checked={selectedIds.length === filteredOperations.length && filteredOperations.length > 0}
-                                                className="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                                                className="rounded border-edge-strong bg-surface-raised text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                                             />
                                         </th>
 
                                         {/* Date Column Header */}
-                                        <th className="p-3 w-36 border-r border-slate-800/60 relative">
+                                        <th className="p-3 w-36 border-r border-edge/60 relative">
                                             <div className="flex items-center justify-between">
                                                 <span onClick={() => handleSort('date')} className="cursor-pointer hover:text-white flex items-center space-x-1">
                                                     <span>Date</span>
                                                     {sortConfig.key === 'date' && (
-                                                        sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-400" /> : <ArrowDown className="w-3 h-3 text-indigo-400" />
+                                                        sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3 text-accent" /> : <ArrowDown className="w-3 h-3 text-accent" />
                                                     )}
                                                 </span>
 
@@ -863,8 +863,8 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                                     onClick={() => setOpenFilterCol(openFilterCol === 'date' ? null : 'date')}
                                                     className={`p-1 rounded-md transition cursor-pointer ${
                                                         isColumnFiltered('date')
-                                                            ? 'bg-indigo-600 text-white shadow-sm ring-2 ring-indigo-400/50'
-                                                            : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                                                            ? 'bg-indigo-600 text-white shadow-sm ring-2 ring-accent/50'
+                                                            : 'text-on-surface-muted hover:text-white hover:bg-surface-elevated'
                                                     }`}
                                                     title="Filtrer la colonne Date"
                                                 >
@@ -874,10 +874,10 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
 
                                             {/* Date Excel Filter Popover */}
                                             {openFilterCol === 'date' && (
-                                                <div ref={popoverRef} className="absolute left-0 top-full mt-2 w-64 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-3 z-50 text-xs normal-case font-normal space-y-3">
-                                                    <div className="font-semibold text-slate-200 border-b border-slate-800 pb-2 flex justify-between items-center">
+                                                <div ref={popoverRef} className="absolute left-0 top-full mt-2 w-64 bg-surface-raised border border-edge-strong rounded-2xl shadow-2xl p-3 z-50 text-xs normal-case font-normal space-y-3">
+                                                    <div className="font-semibold text-on-surface border-b border-edge pb-2 flex justify-between items-center">
                                                         <span>Filtre Excel: Date</span>
-                                                        <button onClick={() => setOpenFilterCol(null)} className="text-slate-400 hover:text-white">
+                                                        <button onClick={() => setOpenFilterCol(null)} className="text-on-surface-muted hover:text-white">
                                                             <X className="w-3.5 h-3.5" />
                                                         </button>
                                                     </div>
@@ -885,7 +885,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                                     <div className="space-y-1">
                                                         <button
                                                             onClick={() => handleSort('date')}
-                                                            className="w-full text-left px-2 py-1.5 rounded hover:bg-slate-800 text-slate-300 flex items-center justify-between"
+                                                            className="w-full text-left px-2 py-1.5 rounded hover:bg-surface-elevated text-on-surface-secondary flex items-center justify-between"
                                                         >
                                                             <span>Trier du plus récent au plus ancien</span>
                                                             <ArrowDown className="w-3 h-3" />
@@ -894,7 +894,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                                             onClick={() => {
                                                                 setSortConfig({ key: 'date', direction: 'asc' });
                                                             }}
-                                                            className="w-full text-left px-2 py-1.5 rounded hover:bg-slate-800 text-slate-300 flex items-center justify-between"
+                                                            className="w-full text-left px-2 py-1.5 rounded hover:bg-surface-elevated text-on-surface-secondary flex items-center justify-between"
                                                         >
                                                             <span>Trier du plus ancien au plus récent</span>
                                                             <ArrowUp className="w-3 h-3" />
@@ -902,30 +902,30 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                                     </div>
 
                                                     {/* Filter input inside Date popover */}
-                                                    <div className="border-t border-slate-800 pt-2 space-y-2">
+                                                    <div className="border-t border-edge pt-2 space-y-2">
                                                         <input
                                                             type="text"
                                                             placeholder="Rechercher une date..."
                                                             value={columnFilters.dateSearch}
                                                             onChange={(e) => setColumnFilters({ ...columnFilters, dateSearch: e.target.value })}
-                                                            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                                                            className="w-full bg-surface border border-edge rounded-lg px-2.5 py-1.5 text-xs text-on-surface focus:outline-none focus:border-indigo-500"
                                                         />
 
                                                         <div className="space-y-1">
-                                                            <div className="font-medium text-slate-400 text-[11px]">Valeurs uniques :</div>
+                                                            <div className="font-medium text-on-surface-muted text-[11px]">Valeurs uniques :</div>
                                                             <div className="max-h-40 overflow-y-auto space-y-1 pr-1">
-                                                                <label className="flex items-center space-x-2 p-1 hover:bg-slate-800 rounded cursor-pointer">
+                                                                <label className="flex items-center space-x-2 p-1 hover:bg-surface-elevated rounded cursor-pointer">
                                                                     <input
                                                                         type="checkbox"
                                                                         checked={columnFilters.selectedDates.length === 0}
                                                                         onChange={() => setColumnFilters({ ...columnFilters, selectedDates: [] })}
-                                                                        className="rounded bg-slate-950 border-slate-700 text-indigo-600"
+                                                                        className="rounded bg-surface border-edge-strong text-indigo-600"
                                                                     />
-                                                                    <span className="font-semibold text-indigo-400">(Toutes)</span>
+                                                                    <span className="font-semibold text-accent">(Toutes)</span>
                                                                 </label>
 
                                                                 {filteredDatesInPopover.map((d) => (
-                                                                    <label key={d} className="flex items-center space-x-2 p-1 hover:bg-slate-800 rounded cursor-pointer">
+                                                                    <label key={d} className="flex items-center space-x-2 p-1 hover:bg-surface-elevated rounded cursor-pointer">
                                                                         <input
                                                                             type="checkbox"
                                                                             checked={columnFilters.selectedDates.includes(d)}
@@ -935,14 +935,14 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                                                                     selectedDates: toggleArrayItem(columnFilters.selectedDates, d),
                                                                                 })
                                                                             }
-                                                                            className="rounded bg-slate-950 border-slate-700 text-indigo-600"
+                                                                            className="rounded bg-surface border-edge-strong text-indigo-600"
                                                                         />
-                                                                        <span className="text-slate-300 font-mono">{formatDate(d)}</span>
+                                                                        <span className="text-on-surface-secondary font-mono">{formatDate(d)}</span>
                                                                     </label>
                                                                 ))}
 
                                                                 {filteredDatesInPopover.length === 0 && (
-                                                                    <div className="text-slate-500 italic p-2 text-[11px]">
+                                                                    <div className="text-on-surface-faint italic p-2 text-[11px]">
                                                                         Aucune date correspondante
                                                                     </div>
                                                                 )}
@@ -953,7 +953,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                                     {isColumnFiltered('date') && (
                                                         <button
                                                             onClick={() => setColumnFilters({ ...columnFilters, dateSearch: '', selectedDates: [] })}
-                                                            className="w-full py-1 text-center text-indigo-400 hover:underline text-[11px]"
+                                                            className="w-full py-1 text-center text-accent hover:underline text-[11px]"
                                                         >
                                                             Effacer ce filtre
                                                         </button>
@@ -963,12 +963,12 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                         </th>
 
                                         {/* Type de dépense Column Header */}
-                                        <th className="p-3 w-56 border-r border-slate-800/60 relative">
+                                        <th className="p-3 w-56 border-r border-edge/60 relative">
                                             <div className="flex items-center justify-between">
                                                 <span onClick={() => handleSort('expense_type')} className="cursor-pointer hover:text-white flex items-center space-x-1">
                                                     <span>Type de dépense</span>
                                                     {sortConfig.key === 'expense_type' && (
-                                                        sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-400" /> : <ArrowDown className="w-3 h-3 text-indigo-400" />
+                                                        sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3 text-accent" /> : <ArrowDown className="w-3 h-3 text-accent" />
                                                     )}
                                                 </span>
 
@@ -976,8 +976,8 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                                     onClick={() => setOpenFilterCol(openFilterCol === 'expense_type' ? null : 'expense_type')}
                                                     className={`p-1 rounded-md transition cursor-pointer ${
                                                         isColumnFiltered('expense_type')
-                                                            ? 'bg-indigo-600 text-white shadow-sm ring-2 ring-indigo-400/50'
-                                                            : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                                                            ? 'bg-indigo-600 text-white shadow-sm ring-2 ring-accent/50'
+                                                            : 'text-on-surface-muted hover:text-white hover:bg-surface-elevated'
                                                     }`}
                                                     title="Filtrer la colonne Type de dépense"
                                                 >
@@ -987,10 +987,10 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
 
                                             {/* Type de dépense Excel Filter Popover */}
                                             {openFilterCol === 'expense_type' && (
-                                                <div ref={popoverRef} className="absolute left-0 top-full mt-2 w-72 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-3 z-50 text-xs normal-case font-normal space-y-3">
-                                                    <div className="font-semibold text-slate-200 border-b border-slate-800 pb-2 flex justify-between items-center">
+                                                <div ref={popoverRef} className="absolute left-0 top-full mt-2 w-72 bg-surface-raised border border-edge-strong rounded-2xl shadow-2xl p-3 z-50 text-xs normal-case font-normal space-y-3">
+                                                    <div className="font-semibold text-on-surface border-b border-edge pb-2 flex justify-between items-center">
                                                         <span>Filtre Excel: Type de dépense</span>
-                                                        <button onClick={() => setOpenFilterCol(null)} className="text-slate-400 hover:text-white">
+                                                        <button onClick={() => setOpenFilterCol(null)} className="text-on-surface-muted hover:text-white">
                                                             <X className="w-3.5 h-3.5" />
                                                         </button>
                                                     </div>
@@ -1000,7 +1000,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                                             onClick={() => {
                                                                 setSortConfig({ key: 'expense_type', direction: 'asc' });
                                                             }}
-                                                            className="w-full text-left px-2 py-1.5 rounded hover:bg-slate-800 text-slate-300 flex items-center justify-between"
+                                                            className="w-full text-left px-2 py-1.5 rounded hover:bg-surface-elevated text-on-surface-secondary flex items-center justify-between"
                                                         >
                                                             <span>Trier de A à Z</span>
                                                             <ArrowDown className="w-3 h-3" />
@@ -1009,7 +1009,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                                             onClick={() => {
                                                                 setSortConfig({ key: 'expense_type', direction: 'desc' });
                                                             }}
-                                                            className="w-full text-left px-2 py-1.5 rounded hover:bg-slate-800 text-slate-300 flex items-center justify-between"
+                                                            className="w-full text-left px-2 py-1.5 rounded hover:bg-surface-elevated text-on-surface-secondary flex items-center justify-between"
                                                         >
                                                             <span>Trier de Z à A</span>
                                                             <ArrowUp className="w-3 h-3" />
@@ -1017,31 +1017,31 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                                     </div>
 
                                                     {/* Filter input inside Type popover */}
-                                                    <div className="border-t border-slate-800 pt-2 space-y-2">
+                                                    <div className="border-t border-edge pt-2 space-y-2">
                                                         <input
                                                             type="text"
                                                             placeholder="Rechercher un type..."
                                                             value={columnFilters.expenseTypeSearch}
                                                             onChange={(e) => setColumnFilters({ ...columnFilters, expenseTypeSearch: e.target.value })}
-                                                            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                                                            className="w-full bg-surface border border-edge rounded-lg px-2.5 py-1.5 text-xs text-on-surface focus:outline-none focus:border-indigo-500"
                                                         />
 
                                                         <div className="space-y-1">
-                                                            <div className="font-medium text-slate-400 text-[11px]">Valeurs uniques :</div>
+                                                            <div className="font-medium text-on-surface-muted text-[11px]">Valeurs uniques :</div>
                                                             <div className="max-h-48 overflow-y-auto space-y-1 pr-1">
-                                                                <label className="flex items-center space-x-2 p-1 hover:bg-slate-800 rounded cursor-pointer">
+                                                                <label className="flex items-center space-x-2 p-1 hover:bg-surface-elevated rounded cursor-pointer">
                                                                     <input
                                                                         type="checkbox"
                                                                         checked={columnFilters.selectedExpenseTypeIds.length === 0}
                                                                         onChange={() => setColumnFilters({ ...columnFilters, selectedExpenseTypeIds: [] })}
-                                                                        className="rounded bg-slate-950 border-slate-700 text-indigo-600"
+                                                                        className="rounded bg-surface border-edge-strong text-indigo-600"
                                                                     />
-                                                                    <span className="font-semibold text-indigo-400">(Tous)</span>
+                                                                    <span className="font-semibold text-accent">(Tous)</span>
                                                                 </label>
 
                                                                 {/* Option Non catégorisé */}
                                                                 {showNoneCategoryInPopover && (
-                                                                    <label className="flex items-center space-x-2 p-1 hover:bg-slate-800 rounded cursor-pointer">
+                                                                    <label className="flex items-center space-x-2 p-1 hover:bg-surface-elevated rounded cursor-pointer">
                                                                         <input
                                                                             type="checkbox"
                                                                             checked={columnFilters.selectedExpenseTypeIds.includes('none')}
@@ -1051,14 +1051,14 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                                                                     selectedExpenseTypeIds: toggleArrayItem(columnFilters.selectedExpenseTypeIds, 'none'),
                                                                                 })
                                                                             }
-                                                                            className="rounded bg-slate-950 border-slate-700 text-indigo-600"
+                                                                            className="rounded bg-surface border-edge-strong text-indigo-600"
                                                                         />
-                                                                        <span className="text-amber-400 italic">Non catégorisé</span>
+                                                                        <span className="text-warning italic">Non catégorisé</span>
                                                                     </label>
                                                                 )}
 
                                                                 {filteredExpenseTypesInPopover.map((t) => (
-                                                                    <label key={t.id} className="flex items-center space-x-2 p-1 hover:bg-slate-800 rounded cursor-pointer">
+                                                                    <label key={t.id} className="flex items-center space-x-2 p-1 hover:bg-surface-elevated rounded cursor-pointer">
                                                                         <input
                                                                             type="checkbox"
                                                                             checked={columnFilters.selectedExpenseTypeIds.includes(String(t.id))}
@@ -1068,15 +1068,15 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                                                                     selectedExpenseTypeIds: toggleArrayItem(columnFilters.selectedExpenseTypeIds, String(t.id)),
                                                                                 })
                                                                             }
-                                                                            className="rounded bg-slate-950 border-slate-700 text-indigo-600"
+                                                                            className="rounded bg-surface border-edge-strong text-indigo-600"
                                                                         />
                                                                         <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: t.color || '#6366f1' }} />
-                                                                        <span className="text-slate-300 truncate">{t.name}</span>
+                                                                        <span className="text-on-surface-secondary truncate">{t.name}</span>
                                                                     </label>
                                                                 ))}
 
                                                                 {filteredExpenseTypesInPopover.length === 0 && !showNoneCategoryInPopover && (
-                                                                    <div className="text-slate-500 italic p-2 text-[11px]">
+                                                                    <div className="text-on-surface-faint italic p-2 text-[11px]">
                                                                         Aucun type correspondant
                                                                     </div>
                                                                 )}
@@ -1087,7 +1087,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                                     {isColumnFiltered('expense_type') && (
                                                         <button
                                                             onClick={() => setColumnFilters({ ...columnFilters, expenseTypeSearch: '', selectedExpenseTypeIds: [] })}
-                                                            className="w-full py-1 text-center text-indigo-400 hover:underline text-[11px]"
+                                                            className="w-full py-1 text-center text-accent hover:underline text-[11px]"
                                                         >
                                                             Effacer ce filtre
                                                         </button>
@@ -1097,12 +1097,12 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                         </th>
 
                                         {/* Intitulé Column Header */}
-                                        <th className="p-3 border-r border-slate-800/60 relative">
+                                        <th className="p-3 border-r border-edge/60 relative">
                                             <div className="flex items-center justify-between">
                                                 <span onClick={() => handleSort('label')} className="cursor-pointer hover:text-white flex items-center space-x-1">
                                                     <span>Intitulé</span>
                                                     {sortConfig.key === 'label' && (
-                                                        sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-400" /> : <ArrowDown className="w-3 h-3 text-indigo-400" />
+                                                        sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3 text-accent" /> : <ArrowDown className="w-3 h-3 text-accent" />
                                                     )}
                                                 </span>
 
@@ -1110,8 +1110,8 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                                     onClick={() => setOpenFilterCol(openFilterCol === 'label' ? null : 'label')}
                                                     className={`p-1 rounded-md transition cursor-pointer ${
                                                         isColumnFiltered('label')
-                                                            ? 'bg-indigo-600 text-white shadow-sm ring-2 ring-indigo-400/50'
-                                                            : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                                                            ? 'bg-indigo-600 text-white shadow-sm ring-2 ring-accent/50'
+                                                            : 'text-on-surface-muted hover:text-white hover:bg-surface-elevated'
                                                     }`}
                                                     title="Filtrer la colonne Intitulé"
                                                 >
@@ -1121,10 +1121,10 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
 
                                             {/* Intitulé Excel Filter Popover */}
                                             {openFilterCol === 'label' && (
-                                                <div ref={popoverRef} className="absolute left-0 top-full mt-2 w-72 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-3 z-50 text-xs normal-case font-normal space-y-3">
-                                                    <div className="font-semibold text-slate-200 border-b border-slate-800 pb-2 flex justify-between items-center">
+                                                <div ref={popoverRef} className="absolute left-0 top-full mt-2 w-72 bg-surface-raised border border-edge-strong rounded-2xl shadow-2xl p-3 z-50 text-xs normal-case font-normal space-y-3">
+                                                    <div className="font-semibold text-on-surface border-b border-edge pb-2 flex justify-between items-center">
                                                         <span>Filtre Excel: Intitulé</span>
-                                                        <button onClick={() => setOpenFilterCol(null)} className="text-slate-400 hover:text-white">
+                                                        <button onClick={() => setOpenFilterCol(null)} className="text-on-surface-muted hover:text-white">
                                                             <X className="w-3.5 h-3.5" />
                                                         </button>
                                                     </div>
@@ -1134,7 +1134,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                                             onClick={() => {
                                                                 setSortConfig({ key: 'label', direction: 'asc' });
                                                             }}
-                                                            className="w-full text-left px-2 py-1.5 rounded hover:bg-slate-800 text-slate-300 flex items-center justify-between"
+                                                            className="w-full text-left px-2 py-1.5 rounded hover:bg-surface-elevated text-on-surface-secondary flex items-center justify-between"
                                                         >
                                                             <span>Trier de A à Z</span>
                                                             <ArrowDown className="w-3 h-3" />
@@ -1143,7 +1143,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                                             onClick={() => {
                                                                 setSortConfig({ key: 'label', direction: 'desc' });
                                                             }}
-                                                            className="w-full text-left px-2 py-1.5 rounded hover:bg-slate-800 text-slate-300 flex items-center justify-between"
+                                                            className="w-full text-left px-2 py-1.5 rounded hover:bg-surface-elevated text-on-surface-secondary flex items-center justify-between"
                                                         >
                                                             <span>Trier de Z à A</span>
                                                             <ArrowUp className="w-3 h-3" />
@@ -1151,30 +1151,30 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                                     </div>
 
                                                     {/* Filter input inside Intitulé popover */}
-                                                    <div className="border-t border-slate-800 pt-2 space-y-2">
+                                                    <div className="border-t border-edge pt-2 space-y-2">
                                                         <input
                                                             type="text"
                                                             placeholder="Rechercher un intitulé..."
                                                             value={columnFilters.labelSearch}
                                                             onChange={(e) => setColumnFilters({ ...columnFilters, labelSearch: e.target.value })}
-                                                            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                                                            className="w-full bg-surface border border-edge rounded-lg px-2.5 py-1.5 text-xs text-on-surface focus:outline-none focus:border-indigo-500"
                                                         />
 
                                                         <div className="space-y-1">
-                                                            <div className="font-medium text-slate-400 text-[11px]">Valeurs uniques :</div>
+                                                            <div className="font-medium text-on-surface-muted text-[11px]">Valeurs uniques :</div>
                                                             <div className="max-h-48 overflow-y-auto space-y-1 pr-1">
-                                                                <label className="flex items-center space-x-2 p-1 hover:bg-slate-800 rounded cursor-pointer">
+                                                                <label className="flex items-center space-x-2 p-1 hover:bg-surface-elevated rounded cursor-pointer">
                                                                     <input
                                                                         type="checkbox"
                                                                         checked={columnFilters.selectedLabels.length === 0}
                                                                         onChange={() => setColumnFilters({ ...columnFilters, selectedLabels: [] })}
-                                                                        className="rounded bg-slate-950 border-slate-700 text-indigo-600"
+                                                                        className="rounded bg-surface border-edge-strong text-indigo-600"
                                                                     />
-                                                                    <span className="font-semibold text-indigo-400">(Tous)</span>
+                                                                    <span className="font-semibold text-accent">(Tous)</span>
                                                                 </label>
 
                                                                 {filteredLabelsInPopover.map((lbl) => (
-                                                                    <label key={lbl} className="flex items-center space-x-2 p-1 hover:bg-slate-800 rounded cursor-pointer">
+                                                                    <label key={lbl} className="flex items-center space-x-2 p-1 hover:bg-surface-elevated rounded cursor-pointer">
                                                                         <input
                                                                             type="checkbox"
                                                                             checked={columnFilters.selectedLabels.includes(lbl)}
@@ -1184,14 +1184,14 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                                                                     selectedLabels: toggleArrayItem(columnFilters.selectedLabels, lbl),
                                                                                 })
                                                                             }
-                                                                            className="rounded bg-slate-950 border-slate-700 text-indigo-600"
+                                                                            className="rounded bg-surface border-edge-strong text-indigo-600"
                                                                         />
-                                                                        <span className="text-slate-300 truncate">{lbl}</span>
+                                                                        <span className="text-on-surface-secondary truncate">{lbl}</span>
                                                                     </label>
                                                                 ))}
 
                                                                 {filteredLabelsInPopover.length === 0 && (
-                                                                    <div className="text-slate-500 italic p-2 text-[11px]">
+                                                                    <div className="text-on-surface-faint italic p-2 text-[11px]">
                                                                         Aucun intitulé correspondant
                                                                     </div>
                                                                 )}
@@ -1202,7 +1202,195 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                                     {isColumnFiltered('label') && (
                                                         <button
                                                             onClick={() => setColumnFilters({ ...columnFilters, labelSearch: '', selectedLabels: [] })}
-                                                            className="w-full py-1 text-center text-indigo-400 hover:underline text-[11px]"
+                                                            className="w-full py-1 text-center text-accent hover:underline text-[11px]"
+                                                        >
+                                                            Effacer ce filtre
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </th>
+
+                                        {/* Montant Column Header */}
+                                        <th className="p-3 w-40 text-right border-r border-edge/60 relative">
+                                            <div className="flex items-center justify-end space-x-2">
+                                                <button
+                                                    onClick={() => setOpenFilterCol(openFilterCol === 'amount' ? null : 'amount')}
+                                                    className={`p-1 rounded-md transition cursor-pointer ${
+                                                        isColumnFiltered('amount')
+                                                            ? 'bg-indigo-600 text-white shadow-sm ring-2 ring-accent/50'
+                                                            : 'text-on-surface-muted hover:text-white hover:bg-surface-elevated'
+                                                    }`}
+                                                    title="Filtrer la colonne Montant"
+                                                >
+                                                    <Filter className="w-3.5 h-3.5" />
+                                                </button>
+
+                                                <span onClick={() => handleSort('amount')} className="cursor-pointer hover:text-white flex items-center space-x-1">
+                                                    <span>Montant</span>
+                                                    {sortConfig.key === 'amount' && (
+                                                        sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3 text-accent" /> : <ArrowDown className="w-3 h-3 text-accent" />
+                                                    )}
+                                                </span>
+                                            </div>
+
+                                            {/* Montant Excel Filter Popover */}
+                                            {openFilterCol === 'amount' && (
+                                                <div ref={popoverRef} className="absolute right-0 top-full mt-2 w-72 bg-surface-raised border border-edge-strong rounded-2xl shadow-2xl p-3 z-50 text-xs normal-case font-normal space-y-3 text-left">
+                                                    <div className="font-semibold text-on-surface border-b border-edge pb-2 flex justify-between items-center">
+                                                        <span>Filtre: Montant</span>
+                                                        <button onClick={() => setOpenFilterCol(null)} className="text-on-surface-muted hover:text-white">
+                                                            <X className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
+
+                                                    <div className="space-y-1">
+                                                        <button
+                                                            onClick={() => setSortConfig({ key: 'amount', direction: 'asc' })}
+                                                            className="w-full text-left px-2 py-1.5 rounded hover:bg-surface-elevated text-on-surface-secondary flex items-center justify-between"
+                                                        >
+                                                            <span>Trier du plus petit au plus grand</span>
+                                                            <ArrowUp className="w-3 h-3" />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => setSortConfig({ key: 'amount', direction: 'desc' })}
+                                                            className="w-full text-left px-2 py-1.5 rounded hover:bg-surface-elevated text-on-surface-secondary flex items-center justify-between"
+                                                        >
+                                                            <span>Trier du plus grand au plus petit</span>
+                                                            <ArrowDown className="w-3 h-3" />
+                                                        </button>
+                                                    </div>
+
+                                                    <div className="border-t border-edge pt-2 space-y-2">
+                                                        <div className="space-y-1.5">
+                                                            <label className="text-on-surface-muted text-[11px] font-medium block">Type d'opération</label>
+                                                            <div className="grid grid-cols-3 gap-1">
+                                                                {['all', 'credit', 'debit'].map((t) => (
+                                                                    <button
+                                                                        key={t}
+                                                                        type="button"
+                                                                        onClick={() => setColumnFilters({ ...columnFilters, amountType: t })}
+                                                                        className={`py-1 px-2 rounded text-center text-[11px] font-medium transition ${
+                                                                            columnFilters.amountType === t
+                                                                                ? 'bg-indigo-600 text-white font-semibold'
+                                                                                : 'bg-surface text-on-surface-muted hover:text-on-surface'
+                                                                        }`}
+                                                                    >
+                                                                        {t === 'all' ? 'Tous' : t === 'credit' ? 'Crédits (+)' : 'Débits (-)'}
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="grid grid-cols-2 gap-2 pt-1">
+                                                            <div>
+                                                                <label className="text-on-surface-muted text-[10px] block mb-0.5">Min (€)</label>
+                                                                <input
+                                                                    type="number"
+                                                                    placeholder="Min"
+                                                                    value={columnFilters.minAmount}
+                                                                    onChange={(e) => setColumnFilters({ ...columnFilters, minAmount: e.target.value })}
+                                                                    className="w-full bg-surface border border-edge rounded px-2 py-1 text-on-surface text-xs focus:outline-none focus:border-indigo-500"
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <label className="text-on-surface-muted text-[10px] block mb-0.5">Max (€)</label>
+                                                                <input
+                                                                    type="number"
+                                                                    placeholder="Max"
+                                                                    value={columnFilters.maxAmount}
+                                                                    onChange={(e) => setColumnFilters({ ...columnFilters, maxAmount: e.target.value })}
+                                                                    className="w-full bg-surface border border-edge rounded px-2 py-1 text-on-surface text-xs focus:outline-none focus:border-indigo-500"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {isColumnFiltered('amount') && (
+                                                        <button
+                                                            onClick={() => setColumnFilters({ ...columnFilters, amountType: 'all', minAmount: '', maxAmount: '' })}
+                                                            className="w-full py-1 text-center text-accent hover:underline text-[11px]"
+                                                        >
+                                                            Effacer ce filtre
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </th>
+
+                                        {/* Commentaires Column Header */}
+                                        <th className="p-3 border-r border-edge/60 relative">
+                                            <div className="flex items-center justify-between">
+                                                <span>Commentaires</span>
+                                                <button
+                                                    onClick={() => setOpenFilterCol(openFilterCol === 'comment' ? null : 'comment')}
+                                                    className={`p-1 rounded-md transition cursor-pointer ${
+                                                        isColumnFiltered('comment')
+                                                            ? 'bg-indigo-600 text-white shadow-sm ring-2 ring-accent/50'
+                                                            : 'text-on-surface-muted hover:text-white hover:bg-surface-elevated'
+                                                    }`}
+                                                    title="Filtrer la colonne Commentaires"
+                                                >
+                                                    <Filter className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
+
+                                            {/* Commentaires Excel Filter Popover */}
+                                            {openFilterCol === 'comment' && (
+                                                <div ref={popoverRef} className="absolute left-0 top-full mt-2 w-72 bg-surface-raised border border-edge-strong rounded-2xl shadow-2xl p-3 z-50 text-xs normal-case font-normal space-y-3">
+                                                    <div className="font-semibold text-on-surface border-b border-edge pb-2 flex justify-between items-center">
+                                                        <span>Filtre: Commentaires</span>
+                                                        <button onClick={() => setOpenFilterCol(null)} className="text-on-surface-muted hover:text-white">
+                                                            <X className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Rechercher commentaire..."
+                                                            value={columnFilters.commentSearch}
+                                                            onChange={(e) => setColumnFilters({ ...columnFilters, commentSearch: e.target.value })}
+                                                            className="w-full bg-surface border border-edge rounded-lg px-2.5 py-1.5 text-xs text-on-surface focus:outline-none focus:border-indigo-500"
+                                                        />
+
+                                                        <div className="space-y-1">
+                                                            <div className="font-medium text-on-surface-muted text-[11px]">Valeurs uniques :</div>
+                                                            <div className="max-h-48 overflow-y-auto space-y-1 pr-1">
+                                                                <label className="flex items-center space-x-2 p-1 hover:bg-surface-elevated rounded cursor-pointer">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={columnFilters.selectedComments.length === 0}
+                                                                        onChange={() => setColumnFilters({ ...columnFilters, selectedComments: [] })}
+                                                                        className="rounded bg-surface border-edge-strong text-indigo-600"
+                                                                    />
+                                                                    <span className="font-semibold text-accent">(Tous)</span>
+                                                                </label>
+
+                                                                {filteredCommentsInPopover.map((cmt) => (
+                                                                    <label key={cmt} className="flex items-center space-x-2 p-1 hover:bg-surface-elevated rounded cursor-pointer">
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            checked={columnFilters.selectedComments.includes(cmt)}
+                                                                            onChange={() =>
+                                                                                setColumnFilters({
+                                                                                    ...columnFilters,
+                                                                                    selectedComments: toggleArrayItem(columnFilters.selectedComments, cmt),
+                                                                                })
+                                                                            }
+                                                                            className="rounded bg-surface border-edge-strong text-indigo-600"
+                                                                        />
+                                                                        <span className="text-on-surface-secondary truncate">{cmt}</span>
+                                                                    </label>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {isColumnFiltered('comment') && (
+                                                        <button
+                                                            onClick={() => setColumnFilters({ ...columnFilters, commentSearch: '', selectedComments: [] })}
+                                                            className="w-full py-1 text-center text-accent hover:underline text-[11px]"
                                                         >
                                                             Effacer ce filtre
                                                         </button>
@@ -1214,7 +1402,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                         <th className="p-3 w-12 text-center">Action</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-800/60 font-medium">
+                                <tbody className="divide-y divide-edge/60 font-medium">
                                     {/* Flat List View Mode */}
                                     {viewMode === 'table' && (
                                         filteredOperations.map((op) => renderOperationRow(op, false, null))
@@ -1231,9 +1419,9 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                             return (
                                                 <React.Fragment key={group.key}>
                                                     {/* Google Sheets Group Header Row */}
-                                                    <tr className="bg-slate-950/90 hover:bg-slate-900 border-t-2 border-b border-slate-800 transition-colors select-none">
+                                                    <tr className="bg-surface/90 hover:bg-surface-raised border-t-2 border-b border-edge transition-colors select-none">
                                                         {/* Group Checkbox */}
-                                                        <td className="p-3 text-center border-r border-slate-800/60 bg-slate-950/70">
+                                                        <td className="p-3 text-center border-r border-edge/60 bg-surface/70">
                                                             <input
                                                                 type="checkbox"
                                                                 checked={isAllGroupSelected}
@@ -1241,7 +1429,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                                                     if (el) el.indeterminate = isSomeGroupSelected;
                                                                 }}
                                                                 onChange={() => handleSelectGroup(group.items)}
-                                                                className="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                                                                className="rounded border-edge-strong bg-surface-raised text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                                                             />
                                                         </td>
 
@@ -1249,17 +1437,17 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                                         <td
                                                             colSpan={3}
                                                             onClick={() => toggleGroupCollapse(group.key)}
-                                                            className="p-3.5 cursor-pointer border-r border-slate-800/60"
+                                                            className="p-3.5 cursor-pointer border-r border-edge/60"
                                                         >
                                                             <div className="flex items-center space-x-3">
                                                                 <button
                                                                     type="button"
-                                                                    className="p-1 rounded-lg bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition"
+                                                                    className="p-1 rounded-lg bg-surface-elevated text-on-surface-secondary hover:text-white hover:bg-surface-overlay transition"
                                                                 >
                                                                     {isCollapsed ? (
-                                                                        <ChevronRight className="w-4 h-4 text-indigo-400" />
+                                                                        <ChevronRight className="w-4 h-4 text-accent" />
                                                                     ) : (
-                                                                        <ChevronDown className="w-4 h-4 text-indigo-400" />
+                                                                        <ChevronDown className="w-4 h-4 text-accent" />
                                                                     )}
                                                                 </button>
 
@@ -1271,7 +1459,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                                                     <span className="font-bold text-white text-sm tracking-wide truncate">
                                                                         {group.expenseType.name}
                                                                     </span>
-                                                                    <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 font-medium shrink-0">
+                                                                    <span className="text-[11px] px-2 py-0.5 rounded-full bg-surface-elevated text-on-surface-secondary border border-edge-strong font-medium shrink-0">
                                                                         {group.count} opération{group.count > 1 ? 's' : ''}
                                                                     </span>
                                                                 </div>
@@ -1281,20 +1469,20 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                                         {/* Group Financial Subtotal */}
                                                         <td
                                                             onClick={() => toggleGroupCollapse(group.key)}
-                                                            className="p-3.5 text-right whitespace-nowrap border-r border-slate-800/60 cursor-pointer"
+                                                            className="p-3.5 text-right whitespace-nowrap border-r border-edge/60 cursor-pointer"
                                                         >
                                                             <div className="space-y-0.5">
-                                                                <div className={`text-xs font-mono font-extrabold ${group.netBalance >= 0 ? 'text-indigo-400' : 'text-slate-200'}`}>
+                                                                <div className={`text-xs font-mono font-extrabold ${group.netBalance >= 0 ? 'text-accent' : 'text-on-surface'}`}>
                                                                     {formatAmount(group.netBalance)}
                                                                 </div>
-                                                                <div className="text-[10px] text-slate-400 space-x-2 font-mono flex items-center justify-end">
+                                                                <div className="text-[10px] text-on-surface-muted space-x-2 font-mono flex items-center justify-end">
                                                                     {group.totalDebits < 0 && (
-                                                                        <span className="text-rose-400 font-semibold">
+                                                                        <span className="text-negative font-semibold">
                                                                             {formatAmount(group.totalDebits)}
                                                                         </span>
                                                                     )}
                                                                     {group.totalCredits > 0 && (
-                                                                        <span className="text-emerald-400 font-semibold">
+                                                                        <span className="text-positive font-semibold">
                                                                             +{formatAmount(group.totalCredits)}
                                                                         </span>
                                                                     )}
@@ -1306,13 +1494,13 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                                         <td
                                                             colSpan={2}
                                                             onClick={() => toggleGroupCollapse(group.key)}
-                                                            className="p-3.5 text-xs text-slate-400 cursor-pointer"
+                                                            className="p-3.5 text-xs text-on-surface-muted cursor-pointer"
                                                         >
                                                             <div className="flex items-center justify-between">
-                                                                <span className="italic text-slate-400 text-[11px]">
+                                                                <span className="italic text-on-surface-muted text-[11px]">
                                                                     {isCollapsed ? 'Cliquez pour afficher le détail' : 'Sous-total de catégorie'}
                                                                 </span>
-                                                                <span className="text-[11px] text-indigo-400 font-semibold flex items-center space-x-1">
+                                                                <span className="text-[11px] text-accent font-semibold flex items-center space-x-1">
                                                                     <span>{isCollapsed ? 'Déplier' : 'Replier'}</span>
                                                                     {isCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                                                                 </span>

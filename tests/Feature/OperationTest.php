@@ -94,4 +94,32 @@ class OperationTest extends TestCase
             'comment' => 'Courses hebdomadaires',
         ]);
     }
+
+    public function test_can_reorder_expense_types(): void
+    {
+        $typeA = ExpenseType::create(['name' => 'A Type', 'color' => '#f59e0b', 'position' => 1]);
+        $typeB = ExpenseType::create(['name' => 'B Type', 'color' => '#3b82f6', 'position' => 2]);
+        $typeC = ExpenseType::create(['name' => 'C Type', 'color' => '#10b981', 'position' => 3]);
+
+        // Reorder so that C is 1st, A is 2nd, B is 3rd
+        $response = $this->post('/expense-types/reorder', [
+            'ids' => [$typeC->id, $typeA->id, $typeB->id],
+        ]);
+
+        $response->assertRedirect();
+
+        $this->assertEquals(1, $typeC->fresh()->position);
+        $this->assertEquals(2, $typeA->fresh()->position);
+        $this->assertEquals(3, $typeB->fresh()->position);
+
+        // Verify order on operations page
+        $this->get('/')
+            ->assertStatus(200)
+            ->assertInertia(fn ($page) => $page
+                ->has('expenseTypes', 3)
+                ->where('expenseTypes.0.id', $typeC->id)
+                ->where('expenseTypes.1.id', $typeA->id)
+                ->where('expenseTypes.2.id', $typeB->id)
+            );
+    }
 }
