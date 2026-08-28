@@ -11,6 +11,12 @@ fi
 # Ajuster les permissions des dossiers de stockage et de cache
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
+# Découverte des packages Laravel
+php artisan package:discover --ansi || true
+
+# Créer le lien symbolique du stockage public si nécessaire
+php artisan storage:link || true
+
 # Exécuter les migrations de base de données
 php artisan migrate --force
 
