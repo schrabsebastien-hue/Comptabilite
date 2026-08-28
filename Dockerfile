@@ -6,14 +6,17 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# Étape 2 : Production PHP 8.3 + Nginx
-FROM php:8.3-fpm-alpine
+# Étape 2 : Production PHP 8.4 + Nginx
+FROM php:8.4-fpm-alpine
+
+ENV COMPOSER_ALLOW_SUPERUSER=1
 
 # Installation des dépendances système et des extensions PHP requises
 RUN apk add --no-cache \
     nginx \
     supervisor \
     curl \
+    git \
     libpng-dev \
     libjpeg-turbo-dev \
     freetype-dev \
