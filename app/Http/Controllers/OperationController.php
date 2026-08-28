@@ -48,6 +48,40 @@ class OperationController extends Controller
 
         $expenseTypes = ExpenseType::orderBy('position')->orderBy('name')->get();
 
+        // Compute split groups info
+        $splitGroups = Operation::whereNotNull('parent_id')
+            ->orWhereIn('id', function ($q) {
+                $q->select('parent_id')->from('operations')->whereNotNull('parent_id');
+            })
+            ->get()
+            ->groupBy(function ($op) {
+                return $op->parent_id ?: $op->id;
+            });
+
+        $splitTotalsMap = [];
+        foreach ($splitGroups as $rootId => $groupOps) {
+            if ($groupOps->count() > 1) {
+                $splitTotalsMap[$rootId] = [
+                    'count' => $groupOps->count(),
+                    'total' => (float) $groupOps->sum('amount'),
+                ];
+            }
+        }
+
+        $operations->transform(function ($op) use ($splitTotalsMap) {
+            $rootId = $op->parent_id ?: $op->id;
+            if (isset($splitTotalsMap[$rootId])) {
+                $op->is_split = true;
+                $op->split_group_id = $rootId;
+                $op->split_total_amount = $splitTotalsMap[$rootId]['total'];
+            } else {
+                $op->is_split = false;
+                $op->split_group_id = null;
+                $op->split_total_amount = null;
+            }
+            return $op;
+        });
+
         // Financial stats
         $totalCredits = (float) $operations->where('amount', '>', 0)->sum('amount');
         $totalDebits = (float) $operations->where('amount', '<', 0)->sum('amount');
@@ -66,148 +100,142 @@ class OperationController extends Controller
         ]);
     }
 
-    public function import(Request $request)
+    public function split(Request $request, Operation $operation)
+    {
+        $validated = $request->validate([
+            'amount' => 'required|numeric|gt:0',
+            'date' => 'required|date',
+            'label' => 'required|string|max:255',
+            'expense_type_id' => 'nullable|exists:expense_types,id',
+            'comment' => 'nullable|string',
+        ]);
+
+        $originalAmount = (float) $operation->amount;
+        $absOriginal = abs($originalAmount);
+        $splitAmountInput = (float) $validated['amount'];
+
+        if ($splitAmountInput >= $absOriginal) {
+            return redirect()->back()->withErrors([
+                'amount' => 'Le montant de la seconde ligne doit être strictement inférieur au montant d\'origine (' . number_format($absOriginal, 2, ',', ' ') . ' €).'
+            ]);
+        }
+
+        DB::transaction(function () use ($operation, $validated, $originalAmount, $splitAmountInput) {
+            $isDebit = $originalAmount < 0;
+
+            // Split portion amount (same sign as original)
+            $newSplitAmount = $isDebit ? -$splitAmountInput : $splitAmountInput;
+
+            // Remaining amount on target line
+            $updatedOriginalAmount = $originalAmount - $newSplitAmount;
+
+            // Root ID for split grouping
+            $rootId = $operation->parent_id ?: $operation->id;
+
+            $operation->update([
+                'amount' => $updatedOriginalAmount,
+            ]);
+
+            Operation::create([
+                'date' => $validated['date'],
+                'label' => $validated['label'],
+                'amount' => $newSplitAmount,
+                'comment' => $validated['comment'] ?? null,
+                'expense_type_id' => $validated['expense_type_id'] ?? null,
+                'import_hash' => 'split_' . uniqid() . '_' . md5(microtime() . $validated['label']),
+                'parent_id' => $rootId,
+            ]);
+        });
+
+        return redirect()->back()->with('success', 'Opération scindée avec succès.');
+    }
+
+    public function import(Request $request, \App\Services\OperationImportService $importService)
     {
         $request->validate([
             'file' => 'required|file|mimes:xls,xlsx,csv,txt,html|max:20480',
         ]);
 
-        $file = $request->file('file');
-        $filePath = $file->getRealPath();
-        $extension = strtolower($file->getClientOriginalExtension());
-
-        $rows = [];
-
         try {
-            // Try loading with PhpSpreadsheet first
-            $spreadsheet = IOFactory::load($filePath);
-            $worksheet = $spreadsheet->getActiveSheet();
-            $rows = $worksheet->toArray(null, true, true, true);
-        } catch (\Throwable $e) {
-            // Fallback for custom CSV or HTML-table saved as .xls
-            $content = file_get_contents($filePath);
-            $rows = $this->parseCsvOrHtmlFallback($content);
-        }
+            $result = $importService->importFile($request->file('file'));
 
-        if (empty($rows)) {
-            return redirect()->back()->with('error', 'Le fichier est vide ou n\'a pas pu être lu.');
-        }
-
-        // Find Header Row & Column Indexes
-        $headers = [];
-        $headerRowIndex = null;
-
-        foreach ($rows as $rowIndex => $row) {
-            $normalizedRow = array_map(function ($val) {
-                return strtolower(trim((string) $val));
-            }, $row);
-
-            // Search for Date operation or similar in row
-            foreach ($normalizedRow as $colKey => $cellText) {
-                if (str_contains($cellText, 'date operation') || str_contains($cellText, 'date opération') || str_contains($cellText, 'date')) {
-                    $headerRowIndex = $rowIndex;
-                    $headers = $normalizedRow;
-                    break 2;
-                }
-            }
-        }
-
-        if ($headerRowIndex === null) {
-            // Default to first row as header if no explicit match
-            $headerRowIndex = array_key_first($rows);
-            $headers = array_map(fn($val) => strtolower(trim((string) $val)), $rows[$headerRowIndex]);
-        }
-
-        // Identify Target Column Letters/Keys
-        $dateCol = $this->findColumnIndex($headers, ['date operation', 'date opération', 'date_operation', 'date']);
-        $labelCol = $this->findColumnIndex($headers, ['sous categorie operation', 'sous categorie', 'sous-categorie', 'categorie', 'intitule', 'titre']);
-        $amountCol = $this->findColumnIndex($headers, ['montant operation', 'montant_operation', 'montant']);
-        $commentCol = $this->findColumnIndex($headers, ['libelle operation', 'libelle_operation', 'libelle', 'commentaire', 'description']);
-
-        if (!$dateCol || !$amountCol) {
-            return redirect()->back()->with('error', 'Impossible de détecter les colonnes obligatoires (Date operation et Montant operation) dans le fichier.');
-        }
-
-        $importedCount = 0;
-        $skippedCount = 0;
-
-        DB::beginTransaction();
-        try {
-            foreach ($rows as $rowIndex => $row) {
-                if ($rowIndex <= $headerRowIndex) {
-                    continue; // Skip headers
-                }
-
-                $rawDate = $row[$dateCol] ?? null;
-                $rawLabel = $row[$labelCol] ?? '';
-                $rawAmount = $row[$amountCol] ?? null;
-                $rawComment = $row[$commentCol] ?? '';
-
-                if (empty($rawDate) && empty($rawAmount)) {
-                    continue; // Empty line
-                }
-
-                $parsedDate = $this->parseDate($rawDate);
-                $parsedAmount = $this->parseAmount($rawAmount);
-
-                if (!$parsedDate || $parsedAmount === null) {
-                    continue; // Invalid date or amount format
-                }
-
-                $label = trim((string) $rawLabel);
-                if (empty($label)) {
-                    $label = 'Opération sans intitulé';
-                }
-
-                $comment = trim((string) $rawComment);
-
-                // Compute unique hash to prevent duplicate imports
-                $hashString = $parsedDate . '|' . sprintf('%.2f', $parsedAmount) . '|' . $label . '|' . $comment;
-                $importHash = md5($hashString);
-
-                $existing = Operation::where('import_hash', $importHash)->exists();
-
-                if ($existing) {
-                    $skippedCount++;
-                    continue;
-                }
-
-                Operation::create([
-                    'date' => $parsedDate,
-                    'label' => $label,
-                    'amount' => $parsedAmount,
-                    'comment' => $comment,
-                    'import_hash' => $importHash,
-                ]);
-
-                $importedCount++;
-            }
-
-            DB::commit();
-
-            $message = "Importation réussie : {$importedCount} nouvelle(s) opération(s) ajoutée(s).";
-            if ($skippedCount > 0) {
-                $message .= " ({$skippedCount} ligne(s) déjà existante(s) ignorée(s)).";
+            $message = "Importation réussie : {$result['imported']} nouvelle(s) opération(s) ajoutée(s).";
+            if ($result['skipped'] > 0) {
+                $message .= " ({$result['skipped']} ligne(s) déjà existante(s) ignorée(s)).";
             }
 
             return redirect()->back()->with('success', $message);
+        } catch (\InvalidArgumentException $e) {
+            return redirect()->back()->with('error', $e->getMessage());
         } catch (\Throwable $e) {
-            DB::rollBack();
             return redirect()->back()->with('error', 'Erreur lors de l\'enregistrement des données : ' . $e->getMessage());
         }
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'date' => 'required|date',
+            'label' => 'required|string|max:255',
+            'amount' => 'required|numeric',
+            'comment' => 'nullable|string',
+            'expense_type_id' => 'nullable|exists:expense_types,id',
+        ]);
+
+        $importHash = 'manual_' . uniqid() . '_' . md5(microtime() . $validated['label'] . $validated['amount']);
+
+        Operation::create([
+            'date' => $validated['date'],
+            'original_date' => $validated['date'],
+            'label' => $validated['label'],
+            'amount' => $validated['amount'],
+            'comment' => $validated['comment'] ?? null,
+            'expense_type_id' => $validated['expense_type_id'] ?? null,
+            'import_hash' => $importHash,
+        ]);
+
+        return redirect()->back()->with('success', 'Opération ajoutée avec succès.');
     }
 
     public function update(Request $request, Operation $operation)
     {
         $validated = $request->validate([
+            'date' => 'sometimes|required|date',
             'label' => 'sometimes|required|string|max:255',
             'comment' => 'nullable|string',
             'expense_type_id' => 'nullable|exists:expense_types,id',
         ]);
 
+        if (isset($validated['date']) && $validated['date'] !== $operation->date) {
+            if (empty($operation->original_date)) {
+                $operation->original_date = $operation->date;
+            }
+        }
+
+        $validated['is_validated'] = true;
+
         $operation->update($validated);
 
         return redirect()->back()->with('success', 'Opération mise à jour.');
+    }
+
+    public function validateSuggestion(Operation $operation)
+    {
+        $operation->update(['is_validated' => true]);
+
+        return redirect()->back()->with('success', 'Suggestion d\'opération validée.');
+    }
+
+    public function bulkValidateSuggestions(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:operations,id',
+        ]);
+
+        Operation::whereIn('id', $validated['ids'])->update(['is_validated' => true]);
+
+        return redirect()->back()->with('success', count($validated['ids']) . ' suggestion(s) validée(s).');
     }
 
     public function destroy(Operation $operation)
@@ -227,6 +255,18 @@ class OperationController extends Controller
         Operation::whereIn('id', $validated['ids'])->delete();
 
         return redirect()->back()->with('success', count($validated['ids']) . ' opération(s) supprimée(s).');
+    }
+
+    public function bulkClearComments(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:operations,id',
+        ]);
+
+        Operation::whereIn('id', $validated['ids'])->update(['comment' => null]);
+
+        return redirect()->back()->with('success', count($validated['ids']) . ' commentaire(s) effacé(s).');
     }
 
     /* Helper Methods */

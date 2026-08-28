@@ -1,8 +1,10 @@
-﻿import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import AppLayout from '../../Layouts/AppLayout';
 import ExpenseTypeSelect from '../../Components/ExpenseTypeSelect';
 import QuickFiltersSidebar from '../../Components/QuickFiltersSidebar';
+import CommentFormatter from '../../Components/CommentFormatter';
+import ConfirmModal from '../../Components/ConfirmModal';
 import {
     Search,
     Filter,
@@ -26,13 +28,28 @@ import {
     Table as TableIcon,
     ChevronsUpDown,
     ChevronsDownUp,
-    ArrowDownWideNarrow
+    ArrowDownWideNarrow,
+    Plus,
+    Split,
+    Lock,
+    MessageSquareX
 } from 'lucide-react';
 
 export default function Index({ operations, expenseTypes, filters, stats }) {
     const [selectedIds, setSelectedIds] = useState([]);
     const [editingCell, setEditingCell] = useState(null); // { id, field }
     const [cellValues, setCellValues] = useState({});
+
+    // Confirm Modal State
+    const [confirmModal, setConfirmModal] = useState({
+        isOpen: false,
+        title: '',
+        message: '',
+        confirmText: 'Confirmer',
+        variant: 'danger',
+        icon: null,
+        onConfirm: () => {},
+    });
 
     // View Mode: 'table' (flat table) or 'grouped' (Google Sheets / accordion grouping)
     const [viewMode, setViewMode] = useState('table'); // default to flat table as requested
@@ -48,6 +65,150 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
     const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
     const [selectedMonth, setSelectedMonth] = useState(null); // 'YYYY-MM' | null
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+    // Create Operation Modal State & Form
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [createForm, setCreateForm] = useState({
+        date: new Date().toISOString().split('T')[0],
+        label: '',
+        amountType: 'debit',
+        amount: '',
+        expense_type_id: '',
+        comment: '',
+    });
+    const [createSubmitting, setCreateSubmitting] = useState(false);
+
+    const handleCreateOperation = (e) => {
+        e.preventDefault();
+        const rawAmount = parseFloat(createForm.amount);
+        if (isNaN(rawAmount) || rawAmount === 0) return;
+
+        const finalAmount = createForm.amountType === 'debit' ? -Math.abs(rawAmount) : Math.abs(rawAmount);
+
+        setCreateSubmitting(true);
+        router.post(
+            '/operations',
+            {
+                date: createForm.date,
+                label: createForm.label,
+                amount: finalAmount,
+                expense_type_id: createForm.expense_type_id || null,
+                comment: createForm.comment || null,
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setCreateForm({
+                        date: new Date().toISOString().split('T')[0],
+                        label: '',
+                        amountType: 'debit',
+                        amount: '',
+                        expense_type_id: '',
+                        comment: '',
+                    });
+                    setIsCreateModalOpen(false);
+                    setCreateSubmitting(false);
+                },
+                onError: () => {
+                    setCreateSubmitting(false);
+                }
+            }
+        );
+    };
+
+    // Split Operation Modal State & Form
+    const [splitModalOperation, setSplitModalOperation] = useState(null);
+    const [splitForm, setSplitForm] = useState({
+        date: '',
+        label: '',
+        amount: '',
+        expense_type_id: '',
+        comment: '',
+    });
+    const [splitSubmitting, setSplitSubmitting] = useState(false);
+    const [splitErrors, setSplitErrors] = useState({});
+
+    const handleOpenSplitModal = (op) => {
+        setSplitModalOperation(op);
+        setSplitForm({
+            date: op.date || new Date().toISOString().split('T')[0],
+            label: op.label || '',
+            amount: '',
+            expense_type_id: op.expense_type_id || '',
+            comment: op.comment || '',
+        });
+        setSplitErrors({});
+    };
+
+    const handleSplitOperation = (e) => {
+        e.preventDefault();
+        if (!splitModalOperation) return;
+
+        const absOpAmount = Math.abs(parseFloat(splitModalOperation.amount));
+        const enteredAmount = parseFloat(splitForm.amount);
+
+        if (isNaN(enteredAmount) || enteredAmount <= 0) {
+            setSplitErrors({ amount: 'Veuillez saisir un montant positif valide.' });
+            return;
+        }
+
+        if (enteredAmount >= absOpAmount) {
+            setSplitErrors({
+                amount: `Le montant de la seconde ligne doit être strictement inférieur au montant d'origine (${formatAmount(absOpAmount)}).`
+            });
+            return;
+        }
+
+        setSplitSubmitting(true);
+        router.post(
+            `/operations/${splitModalOperation.id}/split`,
+            {
+                date: splitForm.date,
+                label: splitForm.label,
+                amount: enteredAmount,
+                expense_type_id: splitForm.expense_type_id || null,
+                comment: splitForm.comment || null,
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setSplitModalOperation(null);
+                    setSplitSubmitting(false);
+                },
+                onError: (errs) => {
+                    setSplitErrors(errs);
+                    setSplitSubmitting(false);
+                }
+            }
+        );
+    };
+
+    const splitPreview = useMemo(() => {
+        if (!splitModalOperation) return null;
+
+        const origAmount = parseFloat(splitModalOperation.amount);
+        const isDebit = origAmount < 0;
+        const absOrig = Math.abs(origAmount);
+        const enteredVal = parseFloat(splitForm.amount) || 0;
+
+        const isValidAmount = enteredVal > 0 && enteredVal < absOrig;
+        const line2Abs = enteredVal;
+        const line1Abs = absOrig - enteredVal;
+
+        const line1Final = isDebit ? -line1Abs : line1Abs;
+        const line2Final = isDebit ? -line2Abs : line2Abs;
+
+        return {
+            isDebit,
+            absOrig,
+            origAmount,
+            isValidAmount,
+            line1Final,
+            line2Final,
+            line1Abs,
+            line2Abs,
+        };
+    }, [splitModalOperation, splitForm.amount]);
 
     // Individual Column Filters State
     const [columnFilters, setColumnFilters] = useState({
@@ -419,22 +580,77 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
 
     const handleBulkDelete = () => {
         if (selectedIds.length === 0) return;
-        if (confirm(`Voulez-vous vraiment supprimer les ${selectedIds.length} opération(s) sélectionnée(s) ?`)) {
-            router.post(
-                '/operations/bulk-delete',
-                { ids: selectedIds },
-                {
-                    preserveScroll: true,
-                    onSuccess: () => setSelectedIds([]),
-                }
-            );
-        }
+        setConfirmModal({
+            isOpen: true,
+            title: 'Supprimer les opérations sélectionnées',
+            message: `Êtes-vous sûr de vouloir supprimer définitivement les ${selectedIds.length} opération(s) sélectionnée(s) ? Cette action est irréversible.`,
+            confirmText: `Supprimer (${selectedIds.length})`,
+            variant: 'danger',
+            icon: Trash2,
+            onConfirm: () => {
+                router.post(
+                    '/operations/bulk-delete',
+                    { ids: selectedIds },
+                    {
+                        preserveScroll: true,
+                        onSuccess: () => setSelectedIds([]),
+                    }
+                );
+            },
+        });
     };
 
+    const handleBulkClearComments = () => {
+        if (selectedIds.length === 0) return;
+        setConfirmModal({
+            isOpen: true,
+            title: 'Effacer les commentaires',
+            message: `Voulez-vous vraiment effacer le commentaire de(s) ${selectedIds.length} opération(s) sélectionnée(s) ? Le texte du commentaire sera supprimé.`,
+            confirmText: `Effacer (${selectedIds.length})`,
+            variant: 'warning',
+            icon: MessageSquareX,
+            onConfirm: () => {
+                router.post(
+                    '/operations/bulk-clear-comments',
+                    { ids: selectedIds },
+                    {
+                        preserveScroll: true,
+                        onSuccess: () => setSelectedIds([]),
+                    }
+                );
+            },
+        });
+    };
+
+    const handleValidateSuggestion = (id) => {
+        router.patch(`/operations/${id}/validate`, {}, { preserveScroll: true });
+    };
+
+    const handleBulkValidateSuggestions = (idsToValidate) => {
+        if (!idsToValidate || idsToValidate.length === 0) return;
+        router.post('/operations/bulk-validate', { ids: idsToValidate }, { preserveScroll: true });
+    };
+
+    const unvalidatedAutoCount = useMemo(() => {
+        return operations.filter((op) => op.is_auto_categorized && !op.is_validated).length;
+    }, [operations]);
+
+    const unvalidatedAutoIds = useMemo(() => {
+        return operations.filter((op) => op.is_auto_categorized && !op.is_validated).map((op) => op.id);
+    }, [operations]);
+
     const handleDeleteOne = (id) => {
-        if (confirm('Voulez-vous supprimer cette opération ?')) {
-            router.delete(`/operations/${id}`, { preserveScroll: true });
-        }
+        setConfirmModal({
+            isOpen: true,
+            title: 'Supprimer l\'opération',
+            message: 'Voulez-vous vraiment supprimer cette opération ? Cette action est définitive.',
+            confirmText: 'Supprimer',
+            variant: 'danger',
+            icon: Trash2,
+            onConfirm: () => {
+                router.delete(`/operations/${id}`, { preserveScroll: true });
+            },
+        });
     };
 
     const formatAmount = (val) => {
@@ -451,16 +667,24 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
             <tr
                 key={op.id}
                 className={`hover:bg-surface-elevated/40 transition-colors ${
-                    isSelected ? 'bg-indigo-500/5' : isGrouped ? 'bg-surface-raised/30' : ''
+                    isSelected
+                        ? 'bg-indigo-500/5'
+                        : op.is_split
+                        ? 'bg-amber-500/5 hover:bg-amber-500/10'
+                        : isGrouped
+                        ? 'bg-surface-raised/30'
+                        : ''
                 }`}
                 style={
-                    isGrouped && groupColor
+                    op.is_split
+                        ? { borderLeft: '4px solid #f59e0b' }
+                        : isGrouped && groupColor
                         ? { borderLeft: `3px solid ${groupColor}80` }
                         : undefined
                 }
             >
                 {/* Checkbox */}
-                <td className={`p-4 text-center border-r border-edge/40 ${isGrouped ? 'pl-6' : ''}`}>
+                <td className={`p-3 text-center border-r border-edge/40 ${isGrouped ? 'pl-5' : ''}`}>
                     <input
                         type="checkbox"
                         checked={isSelected}
@@ -469,13 +693,46 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                     />
                 </td>
 
-                {/* Date */}
-                <td className="p-4 text-on-surface-secondary font-mono text-xs whitespace-nowrap border-r border-edge/40">
-                    {formatDate(op.date)}
+                {/* Date (Editable + Badge Date d'origine) */}
+                <td className="p-3 text-on-surface-secondary font-mono text-xs border-r border-edge/40">
+                    {editingCell?.id === op.id && editingCell?.field === 'date' ? (
+                        <input
+                            type="date"
+                            autoFocus
+                            value={
+                                cellValues[`${op.id}-date`] !== undefined
+                                    ? cellValues[`${op.id}-date`]
+                                    : op.date
+                            }
+                            onChange={(e) =>
+                                setCellValues({ ...cellValues, [`${op.id}-date`]: e.target.value })
+                            }
+                            onKeyDown={(e) => handleCellKeyDown(e, op.id, 'date')}
+                            onBlur={() => handleSaveCell(op.id, 'date')}
+                            className="bg-surface border border-indigo-500 text-white rounded px-2 py-1 text-xs focus:outline-none w-full"
+                        />
+                    ) : (
+                        <div
+                            onClick={() => {
+                                setEditingCell({ id: op.id, field: 'date' });
+                                setCellValues({ ...cellValues, [`${op.id}-date`]: op.date });
+                            }}
+                            className="cursor-pointer hover:bg-surface-elevated/80 px-1.5 py-1 rounded transition flex flex-col justify-center min-w-0"
+                            title={op.original_date && op.original_date !== op.date ? `Date d'origine bancaire initiale : ${formatDate(op.original_date)}` : 'Cliquer pour modifier la date'}
+                        >
+                            <span className="font-mono text-xs font-semibold text-slate-100">{formatDate(op.date)}</span>
+                            {op.original_date && op.original_date !== op.date && (
+                                <span className="inline-flex items-center space-x-1 text-[10px] text-indigo-300 font-mono font-medium tracking-tight mt-0.5" title={`Date d'origine bancaire initiale : ${formatDate(op.original_date)}`}>
+                                    <Calendar className="w-2.5 h-2.5 text-indigo-400 shrink-0" />
+                                    <span>Orig : {formatDate(op.original_date)}</span>
+                                </span>
+                            )}
+                        </div>
+                    )}
                 </td>
 
                 {/* Type de dépense (Custom Selectable Component) */}
-                <td className="p-4 border-r border-edge/40 min-w-[210px]">
+                <td className="p-3 border-r border-edge/40 min-w-0">
                     <ExpenseTypeSelect
                         value={op.expense_type_id}
                         expenseTypes={expenseTypes}
@@ -483,8 +740,8 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                     />
                 </td>
 
-                {/* Intitulé (Editable) */}
-                <td className="p-4 border-r border-edge/40">
+                {/* Intitulé (Editable) + Badges Scindé / Auto-rempli */}
+                <td className="p-3 border-r border-edge/40 min-w-0">
                     {editingCell?.id === op.id && editingCell?.field === 'label' ? (
                         <div className="flex items-center space-x-1">
                             <input
@@ -509,18 +766,37 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                 setEditingCell({ id: op.id, field: 'label' });
                                 setCellValues({ ...cellValues, [`${op.id}-label`]: op.label });
                             }}
-                            className="text-on-surface cursor-pointer hover:bg-surface-elevated/80 px-2 py-1 rounded transition flex items-center justify-between group"
-                            title="Cliquer pour modifier"
+                            className="text-on-surface cursor-pointer hover:bg-surface-elevated/80 px-2 py-1 rounded transition flex items-center justify-between group gap-2 min-w-0 overflow-hidden"
+                            title={op.label}
                         >
                             <span className="truncate">{op.label}</span>
+                            <div className="flex items-center space-x-1 shrink-0">
+                                {op.is_auto_categorized && !op.is_validated && (
+                                    <span
+                                        className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-[10px] font-semibold"
+                                        title={`Catégorisation et intitulé suggérés automatiquement d'après vos saisies précédentes`}
+                                    >
+                                        <span>Pré-rempli</span>
+                                    </span>
+                                )}
+                                {op.is_split && (
+                                    <span
+                                        className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[10px] font-semibold"
+                                        title={`Opération scindée (Total scindé d'origine : ${formatAmount(op.split_total_amount)})`}
+                                    >
+                                        <Split className="w-3 h-3 text-amber-400" />
+                                        <span className="hidden sm:inline">Total : {formatAmount(op.split_total_amount)}</span>
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     )}
                 </td>
 
                 {/* Montant */}
-                <td className="p-4 text-right whitespace-nowrap border-r border-edge/40">
+                <td className="p-3 text-right whitespace-nowrap border-r border-edge/40">
                     <span
-                        className={`inline-block px-2.5 py-1 rounded-lg text-xs font-mono font-bold ${
+                        className={`inline-block px-2 py-0.5 rounded-lg text-xs font-mono font-bold ${
                             isDebit
                                 ? 'bg-negative/10 text-negative border border-rose-500/20'
                                 : 'bg-positive/10 text-positive border border-emerald-500/20'
@@ -531,49 +807,54 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                     </span>
                 </td>
 
-                {/* Commentaires (Editable) */}
-                <td className="p-4 border-r border-edge/40">
-                    {editingCell?.id === op.id && editingCell?.field === 'comment' ? (
-                        <div className="flex items-center space-x-1">
-                            <input
-                                type="text"
-                                autoFocus
-                                value={
-                                    cellValues[`${op.id}-comment`] !== undefined
-                                        ? cellValues[`${op.id}-comment`]
-                                        : op.comment || ''
-                                }
-                                onChange={(e) =>
-                                    setCellValues({ ...cellValues, [`${op.id}-comment`]: e.target.value })
-                                }
-                                onKeyDown={(e) => handleCellKeyDown(e, op.id, 'comment')}
-                                onBlur={() => handleSaveCell(op.id, 'comment')}
-                                className="w-full bg-surface border border-indigo-500 text-white rounded px-2 py-1 text-xs focus:outline-none"
-                            />
-                        </div>
-                    ) : (
-                        <div
-                            onClick={() => {
-                                setEditingCell({ id: op.id, field: 'comment' });
-                                setCellValues({ ...cellValues, [`${op.id}-comment`]: op.comment || '' });
-                            }}
-                            className="text-on-surface-muted cursor-pointer hover:bg-surface-elevated/80 px-2 py-1 rounded transition flex items-center justify-between text-xs"
-                            title="Cliquer pour modifier"
-                        >
-                            <span className="truncate">{op.comment || <span className="italic text-on-surface-faint">Aucun commentaire</span>}</span>
-                        </div>
-                    )}
+                {/* Commentaires (Editable avec Formatage Enrichi) */}
+                <td className="p-3 border-r border-edge/40 min-w-0">
+                    <CommentFormatter
+                        value={op.comment}
+                        isEditing={editingCell?.id === op.id && editingCell?.field === 'comment'}
+                        onStartEdit={() => {
+                            setEditingCell({ id: op.id, field: 'comment' });
+                        }}
+                        onSave={(newComment) => {
+                            setEditingCell(null);
+                            router.patch(
+                                `/operations/${op.id}`,
+                                { comment: newComment },
+                                { preserveScroll: true }
+                            );
+                        }}
+                        onCancel={() => setEditingCell(null)}
+                    />
                 </td>
 
                 {/* Action */}
-                <td className="p-4 text-center">
-                    <button
-                        onClick={() => handleDeleteOne(op.id)}
-                        className="text-on-surface-faint hover:text-negative p-1.5 rounded-lg hover:bg-negative/10 transition cursor-pointer"
-                        title="Supprimer"
-                    >
-                        <Trash2 className="w-4 h-4" />
-                    </button>
+                <td className="p-3 text-center whitespace-nowrap">
+                    <div className="flex items-center justify-center space-x-1">
+                        {op.is_auto_categorized && !op.is_validated && (
+                            <button
+                                onClick={() => handleValidateSuggestion(op.id)}
+                                className="inline-flex items-center space-x-1 text-emerald-400 hover:text-emerald-300 px-2 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 transition cursor-pointer"
+                                title="Valider la suggestion automatique"
+                            >
+                                <Check className="w-3.5 h-3.5" />
+                                <span className="text-[11px] font-bold">Valider</span>
+                            </button>
+                        )}
+                        <button
+                            onClick={() => handleOpenSplitModal(op)}
+                            className="text-on-surface-faint hover:text-amber-400 p-1.5 rounded-lg hover:bg-amber-500/10 transition cursor-pointer"
+                            title="Scinder cette opération en deux"
+                        >
+                            <Split className="w-4 h-4" />
+                        </button>
+                        <button
+                            onClick={() => handleDeleteOne(op.id)}
+                            className="text-on-surface-faint hover:text-negative p-1.5 rounded-lg hover:bg-negative/10 transition cursor-pointer"
+                            title="Supprimer"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
+                    </div>
                 </td>
             </tr>
         );
@@ -614,7 +895,41 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                             Filtrez les colonnes façon Excel, triez et catégorisez vos opérations bancaires.
                         </p>
                     </div>
+
+                    <button
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-sm shadow-lg shadow-indigo-600/25 transition cursor-pointer shrink-0 self-start md:self-auto"
+                    >
+                        <Plus className="w-4 h-4" />
+                        <span>Ajouter une opération</span>
+                    </button>
                 </div>
+
+                {/* Auto-categorization Validation Banner */}
+                {unvalidatedAutoCount > 0 && (
+                    <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 flex items-center justify-between gap-4 shadow-sm">
+                        <div className="flex items-center space-x-3">
+                            <div className="p-2 rounded-lg bg-emerald-500/20 text-emerald-400">
+                                <Check className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-semibold text-emerald-300">
+                                    {unvalidatedAutoCount} opération(s) pré-remplie(s) automatiquement
+                                </p>
+                                <p className="text-xs text-emerald-400/80">
+                                    Le type de dépense et l'intitulé ont été suggérés en fonction de vos remplissages précédents.
+                                </p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => handleBulkValidateSuggestions(unvalidatedAutoIds)}
+                            className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition cursor-pointer shrink-0"
+                        >
+                            <Check className="w-4 h-4" />
+                            <span>Tout valider ({unvalidatedAutoCount})</span>
+                        </button>
+                    </div>
+                )}
 
                 {/* Main Content Layout with Left Sidebar */}
                 <div className="flex flex-col lg:flex-row gap-6">
@@ -785,15 +1100,25 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                             </div>
                         )}
 
-                        {/* Bulk Delete Button */}
+                        {/* Bulk Actions Buttons */}
                         {selectedIds.length > 0 && (
-                            <button
-                                onClick={handleBulkDelete}
-                                className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-rose-500/15 text-negative-light border border-rose-500/30 hover:bg-rose-500/25 transition cursor-pointer font-medium"
-                            >
-                                <Trash2 className="w-3.5 h-3.5" />
-                                <span>Supprimer ({selectedIds.length})</span>
-                            </button>
+                            <>
+                                <button
+                                    onClick={handleBulkClearComments}
+                                    className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/30 hover:bg-amber-500/25 transition cursor-pointer font-medium"
+                                    title="Effacer les commentaires des opérations sélectionnées"
+                                >
+                                    <MessageSquareX className="w-3.5 h-3.5" />
+                                    <span>Effacer commentaires ({selectedIds.length})</span>
+                                </button>
+                                <button
+                                    onClick={handleBulkDelete}
+                                    className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-rose-500/15 text-negative-light border border-rose-500/30 hover:bg-rose-500/25 transition cursor-pointer font-medium"
+                                >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                    <span>Supprimer ({selectedIds.length})</span>
+                                </button>
+                            </>
                         )}
 
                         {/* Clear filters button */}
@@ -835,12 +1160,12 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                             </div>
                         </div>
                     ) : (
-                        <div className="overflow-x-auto min-h-[400px]">
-                            <table className="w-full text-left text-sm border-collapse">
+                        <div className="w-full min-h-[400px] overflow-x-hidden">
+                            <table className="w-full text-left text-sm border-collapse table-fixed">
                                 <thead className="bg-surface/90 border-b border-edge text-xs font-semibold tracking-wider text-on-surface-secondary select-none sticky top-0 z-20 backdrop-blur">
                                     <tr>
                                         {/* Checkbox Select All */}
-                                        <th className="p-4 w-10 text-center border-r border-edge/60">
+                                        <th className="p-3 w-10 text-center border-r border-edge/60">
                                             <input
                                                 type="checkbox"
                                                 onChange={handleSelectAll}
@@ -963,7 +1288,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                         </th>
 
                                         {/* Type de dépense Column Header */}
-                                        <th className="p-3 w-56 border-r border-edge/60 relative">
+                                        <th className="p-3 w-44 border-r border-edge/60 relative">
                                             <div className="flex items-center justify-between">
                                                 <span onClick={() => handleSort('expense_type')} className="cursor-pointer hover:text-white flex items-center space-x-1">
                                                     <span>Type de dépense</span>
@@ -1097,7 +1422,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                         </th>
 
                                         {/* Intitulé Column Header */}
-                                        <th className="p-3 border-r border-edge/60 relative">
+                                        <th className="p-3 w-[30%] border-r border-edge/60 relative">
                                             <div className="flex items-center justify-between">
                                                 <span onClick={() => handleSort('label')} className="cursor-pointer hover:text-white flex items-center space-x-1">
                                                     <span>Intitulé</span>
@@ -1212,7 +1537,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                         </th>
 
                                         {/* Montant Column Header */}
-                                        <th className="p-3 w-40 text-right border-r border-edge/60 relative">
+                                        <th className="p-3 w-32 text-right border-r border-edge/60 relative">
                                             <div className="flex items-center justify-end space-x-2">
                                                 <button
                                                     onClick={() => setOpenFilterCol(openFilterCol === 'amount' ? null : 'amount')}
@@ -1319,7 +1644,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                         </th>
 
                                         {/* Commentaires Column Header */}
-                                        <th className="p-3 border-r border-edge/60 relative">
+                                        <th className="p-3 w-[24%] border-r border-edge/60 relative">
                                             <div className="flex items-center justify-between">
                                                 <span>Commentaires</span>
                                                 <button
@@ -1399,7 +1724,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                             )}
                                         </th>
 
-                                        <th className="p-3 w-12 text-center">Action</th>
+                                        <th className="p-3 w-16 text-center">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-edge/60 font-medium">
@@ -1520,6 +1845,382 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                     )}
                 </div>
             </div>
+            {/* Modal d'ajout d'une opération */}
+            {isCreateModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-surface-raised border border-edge-strong rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-edge">
+                            <div className="flex items-center space-x-2.5">
+                                <div className="p-2 rounded-xl bg-indigo-500/10 text-accent">
+                                    <Plus className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-bold text-white">Ajouter une opération</h2>
+                                    <p className="text-xs text-on-surface-muted">Saisie manuelle d'une dépense ou d'une recette</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setIsCreateModalOpen(false)}
+                                className="text-on-surface-muted hover:text-white p-1 rounded-lg hover:bg-surface-elevated transition cursor-pointer"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* Form */}
+                        <form onSubmit={handleCreateOperation} className="p-6 space-y-4 text-left">
+                            {/* Date */}
+                            <div>
+                                <label className="block text-xs font-semibold uppercase tracking-wider text-on-surface-muted mb-1.5">
+                                    Date <span className="text-rose-400">*</span>
+                                </label>
+                                <input
+                                    type="date"
+                                    required
+                                    value={createForm.date}
+                                    onChange={(e) => setCreateForm({ ...createForm, date: e.target.value })}
+                                    className="w-full bg-surface border border-edge rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 transition font-mono"
+                                />
+                            </div>
+
+                            {/* Intitulé */}
+                            <div>
+                                <label className="block text-xs font-semibold uppercase tracking-wider text-on-surface-muted mb-1.5">
+                                    Intitulé / Libellé <span className="text-rose-400">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    required
+                                    placeholder="ex: Achats Supermarché, Virement client..."
+                                    value={createForm.label}
+                                    onChange={(e) => setCreateForm({ ...createForm, label: e.target.value })}
+                                    className="w-full bg-surface border border-edge rounded-xl px-3 py-2 text-sm text-white placeholder-on-surface-muted focus:outline-none focus:border-indigo-500 transition"
+                                />
+                            </div>
+
+                            {/* Type de flux (Dépense / Recette) & Montant */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-semibold uppercase tracking-wider text-on-surface-muted mb-1.5">
+                                        Type de flux <span className="text-rose-400">*</span>
+                                    </label>
+                                    <div className="grid grid-cols-2 gap-1.5 p-1 bg-surface rounded-xl border border-edge">
+                                        <button
+                                            type="button"
+                                            onClick={() => setCreateForm({ ...createForm, amountType: 'debit' })}
+                                            className={`py-1.5 text-xs font-bold rounded-lg transition flex items-center justify-center space-x-1 cursor-pointer ${
+                                                createForm.amountType === 'debit'
+                                                    ? 'bg-negative/20 text-negative border border-rose-500/30'
+                                                    : 'text-on-surface-muted hover:text-white'
+                                            }`}
+                                        >
+                                            <TrendingDown className="w-3.5 h-3.5" />
+                                            <span>Dépense (-)</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setCreateForm({ ...createForm, amountType: 'credit' })}
+                                            className={`py-1.5 text-xs font-bold rounded-lg transition flex items-center justify-center space-x-1 cursor-pointer ${
+                                                createForm.amountType === 'credit'
+                                                    ? 'bg-positive/20 text-positive border border-emerald-500/30'
+                                                    : 'text-on-surface-muted hover:text-white'
+                                            }`}
+                                        >
+                                            <TrendingUp className="w-3.5 h-3.5" />
+                                            <span>Recette (+)</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-semibold uppercase tracking-wider text-on-surface-muted mb-1.5">
+                                        Montant (€) <span className="text-rose-400">*</span>
+                                    </label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        min="0.01"
+                                        required
+                                        placeholder="0.00"
+                                        value={createForm.amount}
+                                        onChange={(e) => setCreateForm({ ...createForm, amount: e.target.value })}
+                                        className="w-full bg-surface border border-edge rounded-xl px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-indigo-500 transition"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Catégorie / Type de dépense */}
+                            <div>
+                                <label className="block text-xs font-semibold uppercase tracking-wider text-on-surface-muted mb-1.5">
+                                    Catégorie (Type de dépense)
+                                </label>
+                                <select
+                                    value={createForm.expense_type_id}
+                                    onChange={(e) => setCreateForm({ ...createForm, expense_type_id: e.target.value })}
+                                    className="w-full bg-surface border border-edge rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 transition cursor-pointer"
+                                >
+                                    <option value="">-- Non catégorisé --</option>
+                                    {expenseTypes.map((t) => (
+                                        <option key={t.id} value={t.id}>
+                                            {t.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Commentaires */}
+                            <div>
+                                <label className="block text-xs font-semibold uppercase tracking-wider text-on-surface-muted mb-1.5">
+                                    Commentaire (optionnel)
+                                </label>
+                                <input
+                                    type="text"
+                                    placeholder="Notes, détails..."
+                                    value={createForm.comment}
+                                    onChange={(e) => setCreateForm({ ...createForm, comment: e.target.value })}
+                                    className="w-full bg-surface border border-edge rounded-xl px-3 py-2 text-sm text-white placeholder-on-surface-muted focus:outline-none focus:border-indigo-500 transition"
+                                />
+                            </div>
+
+                            {/* Modal Footer / Buttons */}
+                            <div className="flex items-center justify-end space-x-3 pt-4 border-t border-edge">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsCreateModalOpen(false)}
+                                    className="px-4 py-2 rounded-xl bg-surface-elevated hover:bg-surface-overlay text-on-surface-secondary hover:text-white text-xs font-semibold transition cursor-pointer"
+                                >
+                                    Annuler
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={createSubmitting}
+                                    className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/30 transition cursor-pointer disabled:opacity-50 flex items-center space-x-2"
+                                >
+                                    <Plus className="w-4 h-4" />
+                                    <span>Enregistrer l'opération</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal de scission d'une opération */}
+            {splitModalOperation && splitPreview && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-surface-raised border border-edge-strong rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-edge">
+                            <div className="flex items-center space-x-2.5">
+                                <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
+                                    <Split className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-bold text-white">Scinder l'opération en deux</h2>
+                                    <p className="text-xs text-on-surface-muted">
+                                        Création d'une 2<sup>ème</sup> ligne et ajustement automatique de la 1<sup>ère</sup>
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setSplitModalOperation(null)}
+                                className="text-on-surface-muted hover:text-white p-1 rounded-lg hover:bg-surface-elevated transition cursor-pointer"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* Summary Banner of original Operation */}
+                        <div className="bg-surface/80 px-6 py-3.5 border-b border-edge flex items-center justify-between text-xs">
+                            <div className="space-y-0.5">
+                                <span className="text-on-surface-muted uppercase text-[10px] tracking-wider font-semibold">Opération initiale</span>
+                                <div className="font-semibold text-white truncate max-w-[220px]">
+                                    {splitModalOperation.label}
+                                </div>
+                            </div>
+                            <div className="text-right space-y-0.5">
+                                <span className="text-on-surface-muted uppercase text-[10px] tracking-wider font-semibold">Montant d'origine</span>
+                                <div className={`font-mono font-bold ${splitPreview.isDebit ? 'text-negative' : 'text-positive'}`}>
+                                    {!splitPreview.isDebit && '+'}{formatAmount(splitPreview.origAmount)}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Form */}
+                        <form onSubmit={handleSplitOperation} className="p-6 space-y-4 text-left">
+                            {/* Locked Type & Second Row Amount */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                {/* Type de flux (Verrouillé) */}
+                                <div>
+                                    <label className="block text-xs font-semibold uppercase tracking-wider text-on-surface-muted mb-1.5 flex items-center justify-between">
+                                        <span>Type de flux</span>
+                                        <span className="text-[10px] text-amber-400 font-normal flex items-center space-x-1">
+                                            <Lock className="w-3 h-3 inline" />
+                                            <span>Fixé par l'opération</span>
+                                        </span>
+                                    </label>
+                                    <div className="p-2 bg-surface rounded-xl border border-edge flex items-center space-x-2">
+                                        {splitPreview.isDebit ? (
+                                            <span className="w-full py-1 px-2.5 rounded-lg bg-negative/20 text-negative border border-rose-500/30 text-xs font-bold flex items-center justify-center space-x-1.5">
+                                                <TrendingDown className="w-3.5 h-3.5" />
+                                                <span>Dépense (-)</span>
+                                            </span>
+                                        ) : (
+                                            <span className="w-full py-1 px-2.5 rounded-lg bg-positive/20 text-positive border border-emerald-500/30 text-xs font-bold flex items-center justify-center space-x-1.5">
+                                                <TrendingUp className="w-3.5 h-3.5" />
+                                                <span>Recette (+)</span>
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Montant de la 2ème ligne */}
+                                <div>
+                                    <label className="block text-xs font-semibold uppercase tracking-wider text-on-surface-muted mb-1.5">
+                                        Montant 2<sup>nde</sup> ligne (€) <span className="text-rose-400">*</span>
+                                    </label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        min="0.01"
+                                        max={splitPreview.absOrig - 0.01}
+                                        required
+                                        placeholder="ex: 45.00"
+                                        value={splitForm.amount}
+                                        onChange={(e) => {
+                                            setSplitForm({ ...splitForm, amount: e.target.value });
+                                            setSplitErrors({});
+                                        }}
+                                        className="w-full bg-surface border border-edge rounded-xl px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-amber-500 transition"
+                                    />
+                                    {splitErrors.amount && (
+                                        <p className="text-[11px] text-rose-400 mt-1 font-medium">{splitErrors.amount}</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Split Preview Card */}
+                            {splitForm.amount !== '' && (
+                                <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 space-y-2 text-xs">
+                                    <div className="text-[11px] font-semibold uppercase text-amber-400 tracking-wider">
+                                        Répartition après scission :
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2 text-on-surface-secondary font-mono">
+                                        <div className="bg-surface/90 p-2 rounded-lg border border-edge">
+                                            <div className="text-[10px] text-on-surface-muted uppercase font-sans">Ligne 1 (d'origine)</div>
+                                            <div className={`font-bold ${splitPreview.isDebit ? 'text-negative' : 'text-positive'}`}>
+                                                {!splitPreview.isDebit && '+'}{formatAmount(splitPreview.line1Final)}
+                                            </div>
+                                        </div>
+                                        <div className="bg-surface/90 p-2 rounded-lg border border-edge">
+                                            <div className="text-[10px] text-on-surface-muted uppercase font-sans">Ligne 2 (nouvelle)</div>
+                                            <div className={`font-bold ${splitPreview.isDebit ? 'text-negative' : 'text-positive'}`}>
+                                                {!splitPreview.isDebit && '+'}{formatAmount(splitPreview.line2Final)}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="text-[10px] text-on-surface-muted italic text-right pt-0.5">
+                                        Total scindé égal au montant initial : {formatAmount(splitPreview.origAmount)}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Date */}
+                            <div>
+                                <label className="block text-xs font-semibold uppercase tracking-wider text-on-surface-muted mb-1.5">
+                                    Date de la 2<sup>nde</sup> ligne <span className="text-rose-400">*</span>
+                                </label>
+                                <input
+                                    type="date"
+                                    required
+                                    value={splitForm.date}
+                                    onChange={(e) => setSplitForm({ ...splitForm, date: e.target.value })}
+                                    className="w-full bg-surface border border-edge rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500 transition font-mono"
+                                />
+                            </div>
+
+                            {/* Intitulé / Libellé */}
+                            <div>
+                                <label className="block text-xs font-semibold uppercase tracking-wider text-on-surface-muted mb-1.5">
+                                    Intitulé 2<sup>nde</sup> ligne <span className="text-rose-400">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    required
+                                    placeholder="ex: Partie 2, Achats divers..."
+                                    value={splitForm.label}
+                                    onChange={(e) => setSplitForm({ ...splitForm, label: e.target.value })}
+                                    className="w-full bg-surface border border-edge rounded-xl px-3 py-2 text-sm text-white placeholder-on-surface-muted focus:outline-none focus:border-amber-500 transition"
+                                />
+                            </div>
+
+                            {/* Catégorie / Type de dépense pour la 2ème ligne */}
+                            <div>
+                                <label className="block text-xs font-semibold uppercase tracking-wider text-on-surface-muted mb-1.5">
+                                    Catégorie 2<sup>nde</sup> ligne (Type de dépense)
+                                </label>
+                                <select
+                                    value={splitForm.expense_type_id}
+                                    onChange={(e) => setSplitForm({ ...splitForm, expense_type_id: e.target.value })}
+                                    className="w-full bg-surface border border-edge rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500 transition cursor-pointer"
+                                >
+                                    <option value="">-- Non catégorisé --</option>
+                                    {expenseTypes.map((t) => (
+                                        <option key={t.id} value={t.id}>
+                                            {t.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Commentaires */}
+                            <div>
+                                <label className="block text-xs font-semibold uppercase tracking-wider text-on-surface-muted mb-1.5">
+                                    Commentaire 2<sup>nde</sup> ligne (optionnel)
+                                </label>
+                                <input
+                                    type="text"
+                                    placeholder="Notes, détails..."
+                                    value={splitForm.comment}
+                                    onChange={(e) => setSplitForm({ ...splitForm, comment: e.target.value })}
+                                    className="w-full bg-surface border border-edge rounded-xl px-3 py-2 text-sm text-white placeholder-on-surface-muted focus:outline-none focus:border-amber-500 transition"
+                                />
+                            </div>
+
+                            {/* Modal Footer / Buttons */}
+                            <div className="flex items-center justify-end space-x-3 pt-4 border-t border-edge">
+                                <button
+                                    type="button"
+                                    onClick={() => setSplitModalOperation(null)}
+                                    className="px-4 py-2 rounded-xl bg-surface-elevated hover:bg-surface-overlay text-on-surface-secondary hover:text-white text-xs font-semibold transition cursor-pointer"
+                                >
+                                    Annuler
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={splitSubmitting || !splitPreview?.isValidAmount}
+                                    className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-md shadow-amber-500/20 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center space-x-2"
+                                >
+                                    <Split className="w-4 h-4" />
+                                    <span>Scinder l'opération</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+            {/* Modal de confirmation personnalisée */}
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                confirmText={confirmModal.confirmText}
+                variant={confirmModal.variant}
+                icon={confirmModal.icon}
+            />
         </div>
     </div>
 </AppLayout>

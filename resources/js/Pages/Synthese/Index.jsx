@@ -1,14 +1,18 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Head, router } from '@inertiajs/react';
 import AppLayout from '../../Layouts/AppLayout';
 import CellAuditModal from '../../Components/Synthese/CellAuditModal';
 import RowRuleModal from '../../Components/Synthese/RowRuleModal';
 import EtatRapprochementPanel from '../../Components/Synthese/EtatRapprochementPanel';
+import AddRowModal from '../../Components/Synthese/AddRowModal';
+import ConfirmDeleteRowModal from '../../Components/Synthese/ConfirmDeleteRowModal';
 import { 
     Calendar, 
     ChevronLeft, 
     ChevronRight, 
     ChevronDown,
+    ChevronUp,
+    ChevronRight as ChevronRightIcon,
     TrendingUp, 
     ArrowDownRight, 
     ArrowUpRight, 
@@ -25,7 +29,10 @@ import {
     Settings,
     Search,
     Info,
-    Scale
+    Scale,
+    Plus,
+    Trash2,
+    GripVertical
 } from 'lucide-react';
 
 export default function SyntheseIndex({ 
@@ -59,6 +66,12 @@ export default function SyntheseIndex({
     // Active Etat de Rapprochement panel
     const [showRapprochement, setShowRapprochement] = useState(false);
 
+    // Add Row Modal: section id or null
+    const [addingRowSection, setAddingRowSection] = useState(null);
+
+    // Confirm Delete Row Modal: rule object or null
+    const [rowToDelete, setRowToDelete] = useState(null);
+
     const months = [
         'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
         'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
@@ -87,6 +100,33 @@ export default function SyntheseIndex({
                 ? prev.filter(id => id !== sectionId) 
                 : [...prev, sectionId]
         );
+    };
+
+    // Reordering rows logic
+    const moveRowTo = (sectionId, fromIndex, toIndex) => {
+        const targetSection = sections.find(s => s.id === sectionId);
+        if (!targetSection || toIndex < 0 || toIndex >= targetSection.rules.length) return;
+
+        const sectionRules = [...targetSection.rules];
+        const [moved] = sectionRules.splice(fromIndex, 1);
+        sectionRules.splice(toIndex, 0, moved);
+
+        const allOrderedIds = [];
+        sections.forEach(s => {
+            const rulesForSec = s.id === sectionId ? sectionRules : s.rules;
+            rulesForSec.forEach(r => allOrderedIds.push(r.row_id));
+        });
+
+        rules.forEach(r => {
+            if (!allOrderedIds.includes(r.row_id)) {
+                allOrderedIds.push(r.row_id);
+            }
+        });
+
+        router.post('/synthese/reorder', { ordered_ids: allOrderedIds }, {
+            preserveScroll: true,
+            preserveState: true,
+        });
     };
 
     // Helper for formatting French currency
@@ -471,15 +511,29 @@ export default function SyntheseIndex({
                                                                 {section.rules.length} lignes
                                                             </span>
                                                         </div>
-                                                        <span className="text-[11px] font-normal text-on-surface-muted group-hover:text-on-surface transition-colors pr-2">
-                                                            {isCollapsed ? 'Cliquer pour déplier' : 'Cliquer pour replier'}
-                                                        </span>
+                                                        <div className="flex items-center space-x-3 pr-2">
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setAddingRowSection(section.id);
+                                                                }}
+                                                                className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-surface-raised/80 hover:bg-surface-elevated text-xs font-medium text-white border border-edge hover:border-accent/40 shadow-sm transition-all cursor-pointer"
+                                                                title={`Ajouter une ligne dans ${section.title}`}
+                                                            >
+                                                                <Plus className="w-3.5 h-3.5 text-accent" />
+                                                                <span>Ajouter une ligne</span>
+                                                            </button>
+                                                            <span className="text-[11px] font-normal text-on-surface-muted group-hover:text-on-surface transition-colors">
+                                                                {isCollapsed ? 'Cliquer pour déplier' : 'Cliquer pour replier'}
+                                                            </span>
+                                                        </div>
                                                     </div>
                                                 </td>
                                             </tr>
 
                                             {/* Lignes de détail de la zone */}
-                                            {!isCollapsed && section.rules.map((rule) => {
+                                            {!isCollapsed && section.rules.map((rule, ruleIdx) => {
                                                 const rowData = calculatedRows[rule.row_id] || { balances: {}, audits: {} };
                                                 const balances = rowData.balances || {};
                                                 const config = rule.calculation_config || {};
@@ -490,6 +544,20 @@ export default function SyntheseIndex({
                                                 return (
                                                     <tr
                                                         key={rule.row_id}
+                                                        draggable={true}
+                                                        onDragStart={(e) => {
+                                                            e.dataTransfer.setData('text/plain', JSON.stringify({ sectionId: section.id, index: ruleIdx }));
+                                                        }}
+                                                        onDragOver={(e) => e.preventDefault()}
+                                                        onDrop={(e) => {
+                                                            e.preventDefault();
+                                                            try {
+                                                                const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+                                                                if (data.sectionId === section.id && data.index !== ruleIdx) {
+                                                                    moveRowTo(section.id, data.index, ruleIdx);
+                                                                }
+                                                            } catch (err) {}
+                                                        }}
                                                         className="hover:bg-surface-elevated/30 transition-colors group"
                                                     >
                                                         {/* Libellé de la ligne avec actions */}
@@ -497,6 +565,7 @@ export default function SyntheseIndex({
                                                             rule.is_italic ? 'italic text-cyan-300/90 pl-6' : 'text-on-surface'
                                                         }`}>
                                                             <div className="flex items-center space-x-2 truncate">
+                                                                <GripVertical className="w-3.5 h-3.5 text-on-surface-muted/40 group-hover:text-on-surface-muted cursor-grab shrink-0 transition-colors" title="Glisser-déposer pour réordonner" />
                                                                 <span className="font-medium truncate" title={rule.label}>{rule.label}</span>
                                                                 {isCarry && (
                                                                     <span className="text-[9px] px-1.5 py-0.2 rounded bg-cyan-950 text-cyan-300 border border-cyan-800">
@@ -511,6 +580,34 @@ export default function SyntheseIndex({
                                                             </div>
 
                                                             <div className="flex items-center space-x-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                {/* Boutons de réordonnancement Monter / Descendre */}
+                                                                <div className="flex items-center space-x-0.5 border-r border-edge/60 pr-1 mr-0.5">
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            moveRowTo(section.id, ruleIdx, ruleIdx - 1);
+                                                                        }}
+                                                                        disabled={ruleIdx === 0}
+                                                                        className="p-1 rounded text-on-surface-muted hover:text-white hover:bg-surface-elevated disabled:opacity-20 disabled:hover:bg-transparent transition-colors cursor-pointer"
+                                                                        title="Monter cette ligne"
+                                                                    >
+                                                                        <ChevronUp className="w-3.5 h-3.5" />
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            moveRowTo(section.id, ruleIdx, ruleIdx + 1);
+                                                                        }}
+                                                                        disabled={ruleIdx === section.rules.length - 1}
+                                                                        className="p-1 rounded text-on-surface-muted hover:text-white hover:bg-surface-elevated disabled:opacity-20 disabled:hover:bg-transparent transition-colors cursor-pointer"
+                                                                        title="Descendre cette ligne"
+                                                                    >
+                                                                        <ChevronDown className="w-3.5 h-3.5" />
+                                                                    </button>
+                                                                </div>
+
                                                                 {isCarry && (
                                                                     <button
                                                                         onClick={() => {
@@ -531,6 +628,14 @@ export default function SyntheseIndex({
                                                                     title="Configurer la formule de calcul de cette ligne"
                                                                 >
                                                                     <Settings className="w-3.5 h-3.5 text-on-surface-muted hover:text-cyan-400 transition-colors" />
+                                                                </button>
+
+                                                                <button
+                                                                    onClick={() => setRowToDelete(rule)}
+                                                                    className="p-1 rounded text-on-surface-muted hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                                                                    title="Supprimer cette ligne"
+                                                                >
+                                                                    <Trash2 className="w-3.5 h-3.5 text-on-surface-muted hover:text-rose-400 transition-colors" />
                                                                 </button>
                                                             </div>
                                                         </td>
@@ -873,6 +978,22 @@ export default function SyntheseIndex({
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Modal d'ajout d'une nouvelle ligne */}
+            {addingRowSection && (
+                <AddRowModal
+                    initialSection={addingRowSection}
+                    onClose={() => setAddingRowSection(null)}
+                />
+            )}
+
+            {/* Modal de confirmation d'avertissement avant suppression */}
+            {rowToDelete && (
+                <ConfirmDeleteRowModal
+                    rule={rowToDelete}
+                    onClose={() => setRowToDelete(null)}
+                />
             )}
         </AppLayout>
     );
