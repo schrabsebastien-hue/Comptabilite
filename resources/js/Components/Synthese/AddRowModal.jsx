@@ -50,13 +50,13 @@ export default function AddRowModal({ initialSection = 'charges_fixes', onClose 
                         <div className="p-2 rounded-xl bg-indigo-500/10 text-accent border border-accent-border">
                             <Plus className="w-5 h-5" />
                         </div>
-                        <h3 className="font-bold text-white text-base">
+                        <h3 className="font-bold text-on-surface text-base">
                             Ajouter une nouvelle ligne
                         </h3>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-1 rounded-lg text-on-surface-muted hover:text-white hover:bg-surface-elevated transition-colors cursor-pointer"
+                        className="p-1 rounded-lg text-on-surface-muted hover:text-on-surface hover:bg-surface-elevated transition-colors cursor-pointer"
                     >
                         <X className="w-4 h-4" />
                     </button>
@@ -64,7 +64,7 @@ export default function AddRowModal({ initialSection = 'charges_fixes', onClose 
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     {error && (
-                        <div className="p-3 text-xs bg-rose-500/10 border border-rose-500/20 text-rose-300 rounded-xl">
+                        <div className="p-3 text-xs bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-800 dark:text-rose-300 rounded-xl">
                             {error}
                         </div>
                     )}
@@ -79,7 +79,7 @@ export default function AddRowModal({ initialSection = 'charges_fixes', onClose 
                             value={label}
                             onChange={(e) => setLabel(e.target.value)}
                             placeholder="ex: Abonnements streaming, Impôts fonciers..."
-                            className="w-full bg-surface border border-edge-strong rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
+                            className="w-full bg-surface border border-edge-strong rounded-xl px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
                         />
                     </div>
 
@@ -91,10 +91,10 @@ export default function AddRowModal({ initialSection = 'charges_fixes', onClose 
                         <select
                             value={section}
                             onChange={(e) => setSection(e.target.value)}
-                            className="w-full bg-surface border border-edge-strong rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer font-medium"
+                            className="w-full bg-surface border border-edge-strong rounded-xl px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer font-medium"
                         >
                             {sectionsOptions.map((opt) => (
-                                <option key={opt.id} value={opt.id} className="bg-surface-raised text-white">
+                                <option key={opt.id} value={opt.id} className="bg-surface text-on-surface">
                                     {opt.label}
                                 </option>
                             ))}
@@ -105,7 +105,7 @@ export default function AddRowModal({ initialSection = 'charges_fixes', onClose 
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-4 py-2 rounded-xl bg-surface-elevated text-on-surface-secondary hover:text-white text-xs font-medium transition-colors cursor-pointer"
+                            className="px-4 py-2 rounded-xl bg-surface-elevated text-on-surface-secondary hover:text-on-surface text-xs font-medium transition-colors cursor-pointer"
                         >
                             Annuler
                         </button>

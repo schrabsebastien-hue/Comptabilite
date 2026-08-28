@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
     Scale, 
     X, 
@@ -284,18 +284,18 @@ export default function EtatRapprochementPanel({
                                             onChange={(e) => handleInputChange(row.id, e.target.value)}
                                             onBlur={() => handleInputBlur(row.id)}
                                             placeholder="0,00"
-                                            className="w-full bg-surface/90 border border-edge-strong/80 focus:border-teal-400 rounded-lg px-2.5 py-1 text-xs text-right text-teal-200 font-mono font-medium focus:outline-none focus:ring-1 focus:ring-teal-400/50 transition-all placeholder:text-on-surface-faint"
+                                            className="w-full bg-surface border border-edge-strong/80 focus:border-teal-400 rounded-lg px-2.5 py-1 text-xs text-right text-teal-900 dark:text-teal-200 font-mono font-medium focus:outline-none focus:ring-1 focus:ring-teal-400/50 transition-all placeholder:text-on-surface-faint"
                                         />
                                     </td>
                                 </tr>
                             ))}
 
                             {/* Ligne Total calculée automatiquement */}
-                            <tr className="bg-teal-950/60 border-t-2 border-teal-500/40 text-on-surface font-bold">
+                            <tr className="bg-teal-100/90 dark:bg-teal-950/60 border-t-2 border-teal-500/40 text-on-surface font-bold">
                                 <td className="px-3.5 py-2.5 text-on-surface text-sm">
                                     Total
                                 </td>
-                                <td className="px-3.5 py-2.5 text-right font-mono text-sm text-teal-300 font-extrabold tracking-tight">
+                                <td className="px-3.5 py-2.5 text-right font-mono text-sm text-teal-900 dark:text-teal-300 font-extrabold tracking-tight">
                                     {formatAmount(totalRapprochement)} €
                                 </td>
                             </tr>
@@ -306,8 +306,8 @@ export default function EtatRapprochementPanel({
                 {/* Bloc de Statut : Conforme / Non conforme */}
                 <div className="space-y-2">
                     {isConforme ? (
-                        <div className="w-full py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-surface font-bold text-center text-sm shadow-lg shadow-emerald-500/20 flex items-center justify-center space-x-2 transition-all transform animate-in zoom-in-95 duration-200">
-                            <CheckCircle2 className="w-5 h-5 text-surface stroke-[2.5]" />
+                        <div className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-center text-sm shadow-lg shadow-emerald-500/20 flex items-center justify-center space-x-2 transition-all transform animate-in zoom-in-95 duration-200">
+                            <CheckCircle2 className="w-5 h-5 text-white stroke-[2.5]" />
                             <span className="tracking-wide">Conforme</span>
                         </div>
                     ) : (
@@ -321,13 +321,13 @@ export default function EtatRapprochementPanel({
                     <div className="bg-surface/60 border border-edge rounded-xl p-3 text-[11px] space-y-1.5">
                         <div className="flex items-center justify-between text-on-surface-muted">
                             <span>Total "Encours et provisions" ({MONTH_NAMES[selectedMonth - 1]}) :</span>
-                            <span className="font-mono font-semibold text-cyan-300">
+                            <span className="font-mono font-semibold text-sky-700 dark:text-cyan-300">
                                 {targetAmount !== null ? `${formatAmount(targetAmount)} €` : 'Non calculé'}
                             </span>
                         </div>
                         <div className="flex items-center justify-between text-on-surface-muted">
                             <span>Total saisi (Etat de rapprochement) :</span>
-                            <span className="font-mono font-semibold text-teal-300">
+                            <span className="font-mono font-semibold text-teal-700 dark:text-teal-300">
                                 {formatAmount(totalRapprochement)} €
                             </span>
                         </div>

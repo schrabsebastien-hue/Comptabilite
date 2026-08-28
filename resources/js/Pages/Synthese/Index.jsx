@@ -224,10 +224,10 @@ export default function SyntheseIndex({
             title: 'Encours et provisions',
             icon: Shield,
             colorScheme: {
-                headerBg: 'bg-cyan-950/40 text-cyan-300 border-cyan-500/30',
-                totalBg: 'bg-cyan-950/60 font-semibold text-cyan-200 border-cyan-500/40',
-                accentText: 'text-cyan-400',
-                badgeBg: 'bg-cyan-500/10 text-cyan-300 border-cyan-500/20'
+                headerBg: 'bg-sky-100/90 dark:bg-cyan-950/40 text-sky-900 dark:text-cyan-300 border-sky-200 dark:border-cyan-500/30',
+                totalBg: 'bg-sky-50 dark:bg-cyan-950/60 font-semibold text-sky-950 dark:text-cyan-200 border-sky-200 dark:border-cyan-500/40',
+                accentText: 'text-sky-700 dark:text-cyan-400',
+                badgeBg: 'bg-sky-200/70 dark:bg-cyan-500/10 text-sky-900 dark:text-cyan-300 border-sky-300 dark:border-cyan-500/20'
             },
             rules: rules.filter(r => r.section === 'encours_provisions'),
             totalLabel: 'Total Encours et provisions'
@@ -237,10 +237,10 @@ export default function SyntheseIndex({
             title: 'Charges fixes',
             icon: CreditCard,
             colorScheme: {
-                headerBg: 'bg-amber-950/40 text-amber-300 border-amber-500/30',
-                totalBg: 'bg-amber-950/60 font-semibold text-amber-200 border-warning-border',
-                accentText: 'text-warning',
-                badgeBg: 'bg-amber-500/10 text-amber-300 border-amber-500/20'
+                headerBg: 'bg-amber-100/90 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 border-amber-200 dark:border-amber-500/30',
+                totalBg: 'bg-amber-50 dark:bg-amber-950/60 font-semibold text-amber-950 dark:text-amber-200 border-amber-200 dark:border-warning-border',
+                accentText: 'text-amber-700 dark:text-warning',
+                badgeBg: 'bg-amber-200/70 dark:bg-amber-500/10 text-amber-900 dark:text-amber-300 border-amber-300 dark:border-amber-500/20'
             },
             rules: rules.filter(r => r.section === 'charges_fixes'),
             totalLabel: 'Total des charges fixes'
@@ -250,10 +250,10 @@ export default function SyntheseIndex({
             title: 'Charges variables',
             icon: ArrowDownRight,
             colorScheme: {
-                headerBg: 'bg-orange-950/40 text-orange-300 border-orange-500/30',
-                totalBg: 'bg-orange-950/60 font-semibold text-orange-200 border-orange-500/40',
-                accentText: 'text-orange-400',
-                badgeBg: 'bg-orange-500/10 text-orange-300 border-orange-500/20'
+                headerBg: 'bg-orange-100/90 dark:bg-orange-950/40 text-orange-900 dark:text-orange-300 border-orange-200 dark:border-orange-500/30',
+                totalBg: 'bg-orange-50 dark:bg-orange-950/60 font-semibold text-orange-950 dark:text-orange-200 border-orange-200 dark:border-orange-500/40',
+                accentText: 'text-orange-700 dark:text-orange-400',
+                badgeBg: 'bg-orange-200/70 dark:bg-orange-500/10 text-orange-900 dark:text-orange-300 border-orange-300 dark:border-orange-500/20'
             },
             rules: rules.filter(r => r.section === 'charges_variables'),
             totalLabel: 'Total des charges variables',
@@ -266,10 +266,10 @@ export default function SyntheseIndex({
             title: 'Revenus',
             icon: ArrowUpRight,
             colorScheme: {
-                headerBg: 'bg-emerald-950/40 text-positive-light border-emerald-500/30',
-                totalBg: 'bg-positive-bg font-semibold text-emerald-200 border-positive-border',
-                accentText: 'text-positive',
-                badgeBg: 'bg-positive/10 text-positive-light border-emerald-500/20'
+                headerBg: 'bg-emerald-100/90 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/30',
+                totalBg: 'bg-emerald-50 dark:bg-positive-bg font-semibold text-emerald-950 dark:text-emerald-200 border-emerald-200 dark:border-positive-border',
+                accentText: 'text-emerald-700 dark:text-positive',
+                badgeBg: 'bg-emerald-200/70 dark:bg-positive/10 text-emerald-900 dark:text-positive-light border-emerald-300 dark:border-emerald-500/20'
             },
             rules: rules.filter(r => r.section === 'revenus'),
             totalLabel: 'Total des revenus'
@@ -326,9 +326,9 @@ export default function SyntheseIndex({
                             </div>
                         </div>
                         <div>
-                            <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+                            <h1 className="text-xl font-bold text-on-surface tracking-tight flex items-center gap-2">
                                 Synthèse Annuelle
-                                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-accent-light border border-accent-border">
+                                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-900 dark:text-accent-light border border-accent-border">
                                     {selectedYear}
                                 </span>
                             </h1>
@@ -346,17 +346,17 @@ export default function SyntheseIndex({
                             className={`inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl border text-xs font-semibold transition-all shadow-md cursor-pointer ${
                                 showRapprochement
                                     ? 'bg-gradient-to-r from-teal-600 to-emerald-600 border-teal-400 text-white shadow-teal-500/20'
-                                    : 'bg-surface border-edge hover:border-teal-500/50 hover:bg-surface-elevated/80 text-teal-300'
+                                    : 'bg-surface border-edge hover:border-teal-500/50 hover:bg-surface-elevated/80 text-teal-700 dark:text-teal-300'
                             }`}
                         >
-                            <Scale className="w-4 h-4 text-teal-400" />
+                            <Scale className="w-4 h-4 text-teal-600 dark:text-teal-400" />
                             <span>Etat de rapprochement</span>
                         </button>
 
                         {/* Bouton Tout replier / Tout déplier */}
                         <button
                             onClick={toggleAll}
-                            className="inline-flex items-center space-x-2 px-3 py-2 rounded-xl bg-surface border border-edge hover:bg-surface-elevated/80 text-on-surface-secondary hover:text-white text-xs font-medium transition-all shadow-inner cursor-pointer"
+                            className="inline-flex items-center space-x-2 px-3 py-2 rounded-xl bg-surface border border-edge hover:bg-surface-elevated/80 text-on-surface-secondary hover:text-on-surface text-xs font-medium transition-all shadow-inner cursor-pointer"
                         >
                             {collapsedSections.length === sections.length ? (
                                 <>
@@ -375,7 +375,7 @@ export default function SyntheseIndex({
                         <div className="flex items-center space-x-2 bg-surface border border-edge rounded-xl p-1 shadow-inner">
                             <button
                                 onClick={() => changeYear(selectedYear - 1)}
-                                className="p-2 rounded-lg text-on-surface-muted hover:text-white hover:bg-surface-elevated transition-colors cursor-pointer"
+                                className="p-2 rounded-lg text-on-surface-muted hover:text-on-surface hover:bg-surface-elevated transition-colors cursor-pointer"
                                 title="Année précédente"
                             >
                                 <ChevronLeft className="w-4 h-4" />
@@ -386,7 +386,7 @@ export default function SyntheseIndex({
                             </div>
                             <button
                                 onClick={() => changeYear(selectedYear + 1)}
-                                className="p-2 rounded-lg text-on-surface-muted hover:text-white hover:bg-surface-elevated transition-colors cursor-pointer"
+                                className="p-2 rounded-lg text-on-surface-muted hover:text-on-surface hover:bg-surface-elevated transition-colors cursor-pointer"
                                 title="Année suivante"
                             >
                                 <ChevronRight className="w-4 h-4" />
@@ -396,16 +396,16 @@ export default function SyntheseIndex({
                 </div>
 
                 {/* Bannière Guide & Audit Info */}
-                <div className="bg-accent-bg border border-accent-border rounded-xl p-3.5 text-xs text-accent-light flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm">
+                <div className="bg-accent-bg border border-accent-border rounded-xl p-3.5 text-xs text-indigo-950 dark:text-accent-light flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm font-medium">
                     <div className="flex items-center space-x-2.5">
                         <Info className="w-4 h-4 text-accent shrink-0" />
                         <span>
-                            <strong>Transparence & Calculs :</strong> Cliquez sur une cellule calculée pour inspecter sa formule et ses écritures bancaires réelles. Cliquez sur l'icône <Settings className="w-3 h-3 inline text-cyan-400 mx-0.5" /> à côté du nom d'une ligne pour modifier son mode de calcul.
+                            <strong>Transparence & Calculs :</strong> Cliquez sur une cellule calculée pour inspecter sa formule et ses écritures bancaires réelles. Cliquez sur l'icône <Settings className="w-3 h-3 inline text-accent dark:text-cyan-400 mx-0.5" /> à côté du nom d'une ligne pour modifier son mode de calcul.
                         </span>
                     </div>
                     <button
                         onClick={handleResetRules}
-                        className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-surface-raised border border-edge-strong hover:bg-surface-elevated text-[11px] text-on-surface-secondary hover:text-white transition-colors cursor-pointer shrink-0"
+                        className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-surface-raised border border-edge-strong hover:bg-surface-elevated text-[11px] text-on-surface-secondary hover:text-on-surface transition-colors cursor-pointer shrink-0 font-medium"
                         title="Réinitialiser les règles par défaut"
                     >
                         <RotateCcw className="w-3 h-3 text-on-surface-muted" />
@@ -461,7 +461,7 @@ export default function SyntheseIndex({
                                                 key={month}
                                                 className={`px-3 py-3.5 text-center uppercase tracking-wider min-w-[105px] last:border-r-0 transition-colors ${
                                                     isCurrent
-                                                        ? 'bg-indigo-600/20 text-accent-light font-bold border-x-2 border-accent-border shadow-inner'
+                                                        ? 'bg-indigo-100/80 dark:bg-indigo-600/20 text-indigo-950 dark:text-accent-light font-bold border-x-2 border-indigo-300 dark:border-accent-border shadow-inner'
                                                         : isFuture 
                                                             ? 'text-on-surface-faint font-normal opacity-60 border-r border-edge/60' 
                                                             : 'text-on-surface-secondary font-semibold border-r border-edge/60'
@@ -490,7 +490,7 @@ export default function SyntheseIndex({
                                             {/* Titre cliquable de la zone (Replier / Déplier) */}
                                             <tr 
                                                 onClick={() => toggleSection(section.id)}
-                                                className={`${section.colorScheme.headerBg} border-y font-semibold cursor-pointer hover:brightness-125 transition-all select-none group`}
+                                                className={`${section.colorScheme.headerBg} border-y font-semibold cursor-pointer hover:brightness-110 dark:hover:brightness-125 transition-all select-none group`}
                                             >
                                                 <td
                                                     colSpan={13}
@@ -518,7 +518,7 @@ export default function SyntheseIndex({
                                                                     e.stopPropagation();
                                                                     setAddingRowSection(section.id);
                                                                 }}
-                                                                className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-surface-raised/80 hover:bg-surface-elevated text-xs font-medium text-white border border-edge hover:border-accent/40 shadow-sm transition-all cursor-pointer"
+                                                                className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-surface-raised/80 hover:bg-surface-elevated text-xs font-medium text-on-surface dark:text-white border border-edge hover:border-accent/40 shadow-sm transition-all cursor-pointer"
                                                                 title={`Ajouter une ligne dans ${section.title}`}
                                                             >
                                                                 <Plus className="w-3.5 h-3.5 text-accent" />
@@ -562,18 +562,18 @@ export default function SyntheseIndex({
                                                     >
                                                         {/* Libellé de la ligne avec actions */}
                                                         <td className={`sticky left-0 z-10 bg-surface-raised/95 backdrop-blur px-4 py-2 border-r border-edge group-hover:bg-surface-elevated flex items-center justify-between ${
-                                                            rule.is_italic ? 'italic text-cyan-300/90 pl-6' : 'text-on-surface'
+                                                            rule.is_italic ? 'italic text-sky-700 dark:text-cyan-300/90 pl-6' : 'text-on-surface'
                                                         }`}>
                                                             <div className="flex items-center space-x-2 truncate">
                                                                 <GripVertical className="w-3.5 h-3.5 text-on-surface-muted/40 group-hover:text-on-surface-muted cursor-grab shrink-0 transition-colors" title="Glisser-déposer pour réordonner" />
                                                                 <span className="font-medium truncate" title={rule.label}>{rule.label}</span>
                                                                 {isCarry && (
-                                                                    <span className="text-[9px] px-1.5 py-0.2 rounded bg-cyan-950 text-cyan-300 border border-cyan-800">
+                                                                    <span className="text-[9px] px-1.5 py-0.2 rounded bg-sky-100 dark:bg-cyan-950 text-sky-800 dark:text-cyan-300 border border-sky-200 dark:border-cyan-800">
                                                                         Cumul M-1
                                                                     </span>
                                                                 )}
                                                                 {!isCarry && hasModules && (
-                                                                    <span className="text-[9px] px-1.5 py-0.2 rounded bg-accent-bg text-accent-light border border-accent-border">
+                                                                    <span className="text-[9px] px-1.5 py-0.2 rounded bg-indigo-100 dark:bg-accent-bg text-indigo-800 dark:text-accent-light border border-indigo-200 dark:border-accent-border">
                                                                         Formule
                                                                     </span>
                                                                 )}
@@ -589,7 +589,7 @@ export default function SyntheseIndex({
                                                                             moveRowTo(section.id, ruleIdx, ruleIdx - 1);
                                                                         }}
                                                                         disabled={ruleIdx === 0}
-                                                                        className="p-1 rounded text-on-surface-muted hover:text-white hover:bg-surface-elevated disabled:opacity-20 disabled:hover:bg-transparent transition-colors cursor-pointer"
+                                                                        className="p-1 rounded text-on-surface-muted hover:text-on-surface hover:bg-surface-elevated disabled:opacity-20 disabled:hover:bg-transparent transition-colors cursor-pointer"
                                                                         title="Monter cette ligne"
                                                                     >
                                                                         <ChevronUp className="w-3.5 h-3.5" />
@@ -601,7 +601,7 @@ export default function SyntheseIndex({
                                                                             moveRowTo(section.id, ruleIdx, ruleIdx + 1);
                                                                         }}
                                                                         disabled={ruleIdx === section.rules.length - 1}
-                                                                        className="p-1 rounded text-on-surface-muted hover:text-white hover:bg-surface-elevated disabled:opacity-20 disabled:hover:bg-transparent transition-colors cursor-pointer"
+                                                                        className="p-1 rounded text-on-surface-muted hover:text-on-surface hover:bg-surface-elevated disabled:opacity-20 disabled:hover:bg-transparent transition-colors cursor-pointer"
                                                                         title="Descendre cette ligne"
                                                                     >
                                                                         <ChevronDown className="w-3.5 h-3.5" />
@@ -614,7 +614,7 @@ export default function SyntheseIndex({
                                                                             setEditingInitialBalanceRow({ rowId: rule.row_id, label: rule.label });
                                                                             setInitialBalanceValue(String(rowData.initial_balance ?? 0));
                                                                         }}
-                                                                        className="px-1.5 py-0.5 rounded text-[10px] bg-cyan-950 text-cyan-300 border border-cyan-800 hover:bg-cyan-900 transition-all flex items-center space-x-1 cursor-pointer"
+                                                                        className="px-1.5 py-0.5 rounded text-[10px] bg-sky-100 dark:bg-cyan-950 text-sky-800 dark:text-cyan-300 border border-sky-200 dark:border-cyan-800 hover:bg-sky-200 dark:hover:bg-cyan-900 transition-all flex items-center space-x-1 cursor-pointer"
                                                                         title="Modifier le solde initial (report N-1)"
                                                                     >
                                                                         <Edit2 className="w-2.5 h-2.5" />
@@ -624,18 +624,18 @@ export default function SyntheseIndex({
                                                                 
                                                                 <button
                                                                     onClick={() => setEditingRule(rule)}
-                                                                    className="p-1 rounded text-on-surface-muted hover:text-white hover:bg-surface-elevated transition-colors cursor-pointer"
+                                                                    className="p-1 rounded text-on-surface-muted hover:text-on-surface hover:bg-surface-elevated transition-colors cursor-pointer"
                                                                     title="Configurer la formule de calcul de cette ligne"
                                                                 >
-                                                                    <Settings className="w-3.5 h-3.5 text-on-surface-muted hover:text-cyan-400 transition-colors" />
+                                                                    <Settings className="w-3.5 h-3.5 text-on-surface-muted hover:text-accent transition-colors" />
                                                                 </button>
 
                                                                 <button
                                                                     onClick={() => setRowToDelete(rule)}
-                                                                    className="p-1 rounded text-on-surface-muted hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                                                                    className="p-1 rounded text-on-surface-muted hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
                                                                     title="Supprimer cette ligne"
                                                                 >
-                                                                    <Trash2 className="w-3.5 h-3.5 text-on-surface-muted hover:text-rose-400 transition-colors" />
+                                                                    <Trash2 className="w-3.5 h-3.5 text-on-surface-muted hover:text-rose-600 dark:hover:text-rose-400 transition-colors" />
                                                                 </button>
                                                             </div>
                                                         </td>
@@ -669,14 +669,14 @@ export default function SyntheseIndex({
                                                                         onClick={() => openCellAudit(rule, monthNum)}
                                                                         className={`px-3 py-2 text-right font-mono font-medium last:border-r-0 transition-colors cursor-pointer group/cell ${
                                                                             isCurrent 
-                                                                                ? 'bg-indigo-500/10 border-x-2 border-accent-border hover:bg-indigo-500/20' 
-                                                                                : 'border-r border-edge/40 hover:bg-indigo-600/10 hover:text-accent-light'
+                                                                                ? 'bg-indigo-100/70 dark:bg-indigo-500/10 border-x-2 border-indigo-300 dark:border-accent-border hover:bg-indigo-100 dark:hover:bg-indigo-500/20' 
+                                                                                : 'border-r border-edge/40 hover:bg-indigo-500/10 hover:text-accent'
                                                                         } ${
                                                                             bal === undefined || bal === null 
                                                                                 ? 'text-on-surface-faint' 
                                                                                 : isNegative 
                                                                                     ? 'text-negative font-semibold' 
-                                                                                    : isCurrent ? 'text-accent-light font-semibold' : 'text-on-surface'
+                                                                                    : isCurrent ? 'text-indigo-900 dark:text-accent-light font-semibold' : 'text-on-surface'
                                                                         }`}
                                                                         title="Cellule calculée automatiquement (verrouillée) - Cliquer pour inspecter la formule et le détail"
                                                                     >
@@ -697,15 +697,15 @@ export default function SyntheseIndex({
                                                                     onDoubleClick={() => openCellAudit(rule, monthNum)}
                                                                     className={`px-3 py-2 text-right font-mono last:border-r-0 cursor-pointer transition-colors ${
                                                                         isCurrent 
-                                                                            ? 'bg-indigo-500/10 border-x-2 border-accent-border hover:bg-indigo-500/20' 
-                                                                            : 'border-r border-edge/40 hover:bg-indigo-600/10 hover:text-accent-light'
+                                                                            ? 'bg-indigo-100/70 dark:bg-indigo-500/10 border-x-2 border-indigo-300 dark:border-accent-border hover:bg-indigo-100 dark:hover:bg-indigo-500/20' 
+                                                                            : 'border-r border-edge/40 hover:bg-indigo-500/10 hover:text-accent'
                                                                     } ${
                                                                         isEditing ? 'bg-accent-bg p-1' : ''
                                                                     } ${
                                                                         manualVal !== undefined && manualVal !== null && manualVal !== 0 
                                                                             ? rule.is_provision 
-                                                                                ? 'text-cyan-300 font-medium' 
-                                                                                : manualVal < 0 ? 'text-amber-300 font-medium' : isCurrent ? 'text-accent-light font-medium' : 'text-on-surface'
+                                                                                ? 'text-sky-700 dark:text-cyan-300 font-medium' 
+                                                                                : manualVal < 0 ? 'text-amber-700 dark:text-amber-300 font-medium' : isCurrent ? 'text-indigo-900 dark:text-accent-light font-medium' : 'text-on-surface'
                                                                             : 'text-on-surface-faint'
                                                                     }`}
                                                                     title="Saisie manuelle - Cliquer pour modifier, double-cliquer pour voir le détail"
@@ -723,7 +723,7 @@ export default function SyntheseIndex({
                                                                                 }}
                                                                                 onBlur={() => saveCellValue(rule.row_id, monthNum)}
                                                                                 placeholder="0.00"
-                                                                                className="w-full bg-surface border border-indigo-500 rounded px-1.5 py-0.5 text-xs text-right text-white focus:outline-none focus:ring-1 focus:ring-indigo-400 font-mono"
+                                                                                className="w-full bg-surface border border-indigo-500 rounded px-1.5 py-0.5 text-xs text-right text-on-surface focus:outline-none focus:ring-1 focus:ring-indigo-400 font-mono"
                                                                             />
                                                                         </div>
                                                                     ) : isSaving ? (
@@ -778,8 +778,8 @@ export default function SyntheseIndex({
 
                                             {/* Lignes de totaux supplémentaires (Total des charges du mois) */}
                                             {section.extraTotals && section.extraTotals.map((extra) => (
-                                                <tr key={extra.id} className="bg-orange-950/80 border-t border-orange-500/40 text-orange-200 font-bold">
-                                                    <td className="sticky left-0 z-10 bg-orange-950/90 backdrop-blur px-4 py-2.5 border-r border-edge text-orange-300 uppercase tracking-wide">
+                                                <tr key={extra.id} className="bg-orange-100/90 dark:bg-orange-950/80 border-t border-orange-300 dark:border-orange-500/40 text-orange-900 dark:text-orange-200 font-bold">
+                                                    <td className="sticky left-0 z-10 bg-orange-100 dark:bg-orange-950/90 backdrop-blur px-4 py-2.5 border-r border-edge text-orange-900 dark:text-orange-300 uppercase tracking-wide">
                                                         {extra.label}
                                                     </td>
                                                     {months.map((m, mIdx) => {
@@ -802,9 +802,9 @@ export default function SyntheseIndex({
                                                         return (
                                                             <td
                                                                 key={monthNum}
-                                                                className={`px-3 py-2.5 text-right font-mono font-bold text-orange-300 last:border-r-0 ${
+                                                                className={`px-3 py-2.5 text-right font-mono font-bold text-orange-900 dark:text-orange-300 last:border-r-0 ${
                                                                     isCurrent 
-                                                                        ? 'bg-indigo-500/20 border-x-2 border-accent-border text-orange-200' 
+                                                                        ? 'bg-indigo-100/80 dark:bg-indigo-500/20 border-x-2 border-indigo-300 dark:border-accent-border text-orange-950 dark:text-orange-200' 
                                                                         : 'border-r border-edge/60'
                                                                 }`}
                                                                 title={`${extra.label} (calculé automatiquement)`}
@@ -820,18 +820,18 @@ export default function SyntheseIndex({
                                 })}
 
                                 {/* Ligne finale : Reste à vivre */}
-                                <tr className="bg-accent-bg border-t-2 border-accent-border font-bold text-accent-light text-sm shadow-lg group">
-                                    <td className="sticky left-0 z-10 bg-accent-bg backdrop-blur px-4 py-3 border-r border-edge text-accent-light uppercase tracking-wide flex items-center justify-between">
+                                <tr className="bg-accent-bg border-t-2 border-accent-border font-bold text-indigo-950 dark:text-accent-light text-sm shadow-lg group">
+                                    <td className="sticky left-0 z-10 bg-accent-bg backdrop-blur px-4 py-3 border-r border-edge text-indigo-950 dark:text-accent-light uppercase tracking-wide flex items-center justify-between">
                                         <div className="flex items-center space-x-2 truncate">
                                             <Wallet className="w-4 h-4 text-accent shrink-0" />
                                             <span className="truncate">{resteAVivreRule.label || 'Reste à vivre'}</span>
                                             {resteAVivreRule.calculation_config?.carry_previous_month && (
-                                                <span className="text-[9px] px-1.5 py-0.2 rounded bg-cyan-950 text-cyan-300 border border-cyan-800 normal-case font-normal shrink-0">
+                                                <span className="text-[9px] px-1.5 py-0.2 rounded bg-sky-100 dark:bg-cyan-950 text-sky-800 dark:text-cyan-300 border border-sky-200 dark:border-cyan-800 normal-case font-normal shrink-0">
                                                     Cumul M-1
                                                 </span>
                                             )}
                                             {!resteAVivreRule.calculation_config?.carry_previous_month && (resteAVivreRule.calculation_config?.modules?.length || 0) > 0 && (
-                                                <span className="text-[9px] px-1.5 py-0.2 rounded bg-accent-bg text-accent-light border border-accent-border normal-case font-normal shrink-0">
+                                                <span className="text-[9px] px-1.5 py-0.2 rounded bg-indigo-100 dark:bg-accent-bg text-indigo-800 dark:text-accent-light border border-indigo-200 dark:border-accent-border normal-case font-normal shrink-0">
                                                     Formule
                                                 </span>
                                             )}
@@ -844,7 +844,7 @@ export default function SyntheseIndex({
                                                         setEditingInitialBalanceRow({ rowId: 'reste_a_vivre', label: resteAVivreRule.label });
                                                         setInitialBalanceValue(String(resteAVivreRowData.initial_balance ?? 0));
                                                     }}
-                                                    className="px-1.5 py-0.5 rounded text-[10px] bg-cyan-950 text-cyan-300 border border-cyan-800 hover:bg-cyan-900 transition-all flex items-center space-x-1 cursor-pointer normal-case font-normal"
+                                                    className="px-1.5 py-0.5 rounded text-[10px] bg-sky-100 dark:bg-cyan-950 text-sky-800 dark:text-cyan-300 border border-sky-200 dark:border-cyan-800 hover:bg-sky-200 dark:hover:bg-cyan-900 transition-all flex items-center space-x-1 cursor-pointer normal-case font-normal"
                                                     title="Modifier le solde initial (report N-1)"
                                                 >
                                                     <Edit2 className="w-2.5 h-2.5" />
@@ -854,10 +854,10 @@ export default function SyntheseIndex({
                                             
                                             <button
                                                 onClick={() => setEditingRule(resteAVivreRule)}
-                                                className="p-1 rounded text-on-surface-muted hover:text-white hover:bg-surface-elevated transition-colors cursor-pointer"
+                                                className="p-1 rounded text-on-surface-muted hover:text-on-surface hover:bg-surface-elevated transition-colors cursor-pointer"
                                                 title="Configurer le calcul du Reste à vivre"
                                             >
-                                                <Settings className="w-3.5 h-3.5 text-on-surface-muted hover:text-cyan-400 transition-colors" />
+                                                <Settings className="w-3.5 h-3.5 text-on-surface-muted hover:text-accent transition-colors" />
                                             </button>
                                         </div>
                                     </td>
@@ -884,8 +884,8 @@ export default function SyntheseIndex({
                                                 onClick={() => openCellAudit(resteAVivreRule, monthNum)}
                                                 className={`px-3 py-3 text-right font-mono font-bold last:border-r-0 cursor-pointer group/cell transition-colors ${
                                                     isCurrent 
-                                                        ? 'bg-indigo-600/30 border-x-2 border-accent-border text-white font-extrabold shadow-inner hover:bg-indigo-600/40' 
-                                                        : reste < 0 ? 'border-r border-edge/60 text-negative hover:bg-rose-950/30' : 'border-r border-edge/60 text-accent-light hover:bg-indigo-950/40'
+                                                        ? 'bg-indigo-200/80 dark:bg-indigo-600/30 border-x-2 border-indigo-400 dark:border-accent-border text-indigo-950 dark:text-white font-extrabold shadow-inner hover:bg-indigo-200 dark:hover:bg-indigo-600/40' 
+                                                        : reste < 0 ? 'border-r border-edge/60 text-negative hover:bg-rose-100/50 dark:hover:bg-rose-950/30' : 'border-r border-edge/60 text-indigo-800 dark:text-accent-light hover:bg-indigo-100/50 dark:hover:bg-indigo-950/40'
                                                 }`}
                                                 title="Reste à vivre calculé automatiquement (verrouillé) - Cliquer pour inspecter la formule et le détail"
                                             >
@@ -925,14 +925,14 @@ export default function SyntheseIndex({
                     <div className="bg-surface-raised border border-edge rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200">
                         <div className="flex items-center justify-between border-b border-edge pb-3">
                             <div className="flex items-center space-x-2">
-                                <Shield className="w-5 h-5 text-cyan-400" />
-                                <h3 className="font-bold text-white text-base">
+                                <Shield className="w-5 h-5 text-accent dark:text-cyan-400" />
+                                <h3 className="font-bold text-on-surface text-base">
                                     Solde initial : {editingInitialBalanceRow.label}
                                 </h3>
                             </div>
                             <button
                                 onClick={() => setEditingInitialBalanceRow(null)}
-                                className="p-1 rounded-lg text-on-surface-muted hover:text-white hover:bg-surface-elevated transition-colors"
+                                className="p-1 rounded-lg text-on-surface-muted hover:text-on-surface hover:bg-surface-elevated transition-colors"
                             >
                                 <X className="w-4 h-4" />
                             </button>
@@ -956,7 +956,7 @@ export default function SyntheseIndex({
                                     if (e.key === 'Escape') setEditingInitialBalanceRow(null);
                                 }}
                                 placeholder="ex: 15000.00"
-                                className="w-full bg-surface border border-edge-strong rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 font-mono"
+                                className="w-full bg-surface border border-edge-strong rounded-xl px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
                             />
                         </div>
 
@@ -964,7 +964,7 @@ export default function SyntheseIndex({
                             <button
                                 type="button"
                                 onClick={() => setEditingInitialBalanceRow(null)}
-                                className="px-4 py-2 rounded-xl bg-surface-elevated text-on-surface-secondary hover:text-white text-xs font-medium transition-colors cursor-pointer"
+                                className="px-4 py-2 rounded-xl bg-surface-elevated text-on-surface-secondary hover:text-on-surface text-xs font-medium transition-colors cursor-pointer"
                             >
                                 Annuler
                             </button>

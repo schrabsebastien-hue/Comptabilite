@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useForm } from '@inertiajs/react';
 import { X, UploadCloud, FileSpreadsheet, AlertCircle, Loader2, CheckCircle } from 'lucide-react';
 
@@ -59,7 +59,7 @@ export default function ImportModal({ isOpen, onClose }) {
                             <FileSpreadsheet className="w-5 h-5" />
                         </div>
                         <div>
-                            <h3 className="text-base font-semibold text-white">Importer des opérations</h3>
+                            <h3 className="text-base font-semibold text-on-surface">Importer des opérations</h3>
                             <p className="text-xs text-on-surface-muted">Fichier .xls généré depuis le site de votre banque</p>
                         </div>
                     </div>
@@ -120,7 +120,7 @@ export default function ImportModal({ isOpen, onClose }) {
                     </div>
 
                     {errors.file && (
-                        <div className="flex items-center space-x-2 text-negative text-xs bg-rose-950/40 p-3 rounded-lg border border-rose-500/30">
+                        <div className="flex items-center space-x-2 text-negative text-xs bg-rose-50 dark:bg-rose-950/40 p-3 rounded-lg border border-rose-200 dark:border-rose-500/30">
                             <AlertCircle className="w-4 h-4 shrink-0" />
                             <span>{errors.file}</span>
                         </div>
@@ -153,7 +153,7 @@ export default function ImportModal({ isOpen, onClose }) {
                             type="button"
                             onClick={onClose}
                             disabled={processing}
-                            className="px-4 py-2 rounded-xl text-xs font-medium text-on-surface-muted hover:text-white hover:bg-surface-elevated transition cursor-pointer"
+                            className="px-4 py-2 rounded-xl text-xs font-medium text-on-surface-muted hover:text-on-surface hover:bg-surface-elevated transition cursor-pointer"
                         >
                             Annuler
                         </button>

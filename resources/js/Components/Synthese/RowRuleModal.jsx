@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { router } from '@inertiajs/react';
 import { 
     X, 
@@ -71,7 +71,7 @@ function SearchableSelect({
                     setIsOpen(!isOpen);
                     setSearchTerm('');
                 }}
-                className="w-full bg-surface-raised border border-edge-strong hover:border-edge-strong rounded-lg px-2.5 py-1.5 text-xs text-left text-white flex items-center justify-between transition-colors focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer shadow-inner"
+                className="w-full bg-surface-raised border border-edge-strong hover:border-edge-strong rounded-lg px-2.5 py-1.5 text-xs text-left text-on-surface flex items-center justify-between transition-colors focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer shadow-inner"
             >
                 <span className="truncate font-medium text-on-surface">
                     {selectedOption ? selectedOption.label : 'Sélectionner une option...'}
@@ -91,7 +91,7 @@ function SearchableSelect({
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             placeholder={placeholder}
-                            className="w-full bg-transparent text-xs text-white placeholder-on-surface-faint focus:outline-none"
+                            className="w-full bg-transparent text-xs text-on-surface placeholder-on-surface-faint focus:outline-none"
                         />
                         {searchTerm && (
                             <button
@@ -130,7 +130,7 @@ function SearchableSelect({
                                                     className={`w-full text-left px-2 py-1.5 rounded-md flex items-center justify-between transition-colors cursor-pointer ${
                                                         isSelected 
                                                             ? 'bg-indigo-600/30 text-accent-light font-semibold border border-accent-border' 
-                                                            : 'text-on-surface-secondary hover:bg-surface-elevated hover:text-white'
+                                                            : 'text-on-surface-secondary hover:bg-surface-elevated hover:text-on-surface'
                                                     }`}
                                                 >
                                                     <span className="truncate">{opt.label}</span>
@@ -322,7 +322,7 @@ export default function RowRuleModal({
                         </div>
                     </div>
                     <div>
-                        <h3 className="font-bold text-white text-sm truncate max-w-[280px]" title={rowRule.label}>
+                        <h3 className="font-bold text-on-surface text-sm truncate max-w-[280px]" title={rowRule.label}>
                             {rowRule.label}
                         </h3>
                         <p className="text-[11px] text-on-surface-muted">
@@ -333,7 +333,7 @@ export default function RowRuleModal({
 
                 <button
                     onClick={onClose}
-                    className="p-1 rounded-lg text-on-surface-muted hover:text-white hover:bg-surface-elevated transition-colors cursor-pointer"
+                    className="p-1 rounded-lg text-on-surface-muted hover:text-on-surface hover:bg-surface-elevated transition-colors cursor-pointer"
                     title="Fermer le volet"
                 >
                     <X className="w-4 h-4" />
@@ -353,7 +353,7 @@ export default function RowRuleModal({
                             type="text"
                             value={label}
                             onChange={(e) => setLabel(e.target.value)}
-                            className="w-full bg-surface border border-edge-strong rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium"
+                            className="w-full bg-surface border border-edge-strong rounded-lg px-3 py-1.5 text-xs text-on-surface focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium"
                             required
                         />
                     </div>
@@ -530,7 +530,7 @@ export default function RowRuleModal({
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-3 py-1.5 rounded-lg bg-surface-elevated text-on-surface-secondary hover:text-white text-xs font-medium transition-colors cursor-pointer"
+                        className="px-3 py-1.5 rounded-lg bg-surface-elevated text-on-surface-secondary hover:text-on-surface text-xs font-medium transition-colors cursor-pointer"
                     >
                         Annuler
                     </button>

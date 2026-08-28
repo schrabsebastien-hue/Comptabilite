@@ -1,4 +1,4 @@
-﻿import React, { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import {
     Calendar,
     Filter,
@@ -91,7 +91,7 @@ export default function QuickFiltersSidebar({
             <div className="bg-surface-raised/80 border border-edge rounded-2xl p-2.5 flex flex-col items-center space-y-4 shadow-xl backdrop-blur-sm self-start transition-all">
                 <button
                     onClick={onToggleCollapse}
-                    className="p-2 rounded-xl bg-surface-elevated text-on-surface-secondary hover:bg-surface-overlay hover:text-white transition cursor-pointer"
+                    className="p-2 rounded-xl bg-surface-elevated text-on-surface-secondary hover:bg-surface-overlay hover:text-on-surface transition cursor-pointer"
                     title="Déplier le volet de filtres"
                 >
                     <ChevronRight className="w-5 h-5 text-accent" />
@@ -186,8 +186,8 @@ export default function QuickFiltersSidebar({
                         onClick={() => onSelectMonth(null)}
                         className={`w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center justify-between cursor-pointer border ${
                             selectedMonth === null
-                                ? 'bg-indigo-600/20 text-accent-light border-accent-border shadow-sm'
-                                : 'bg-surface/40 text-on-surface-secondary border-edge/80 hover:bg-surface-elevated/60 hover:text-white'
+                                ? 'bg-indigo-500/20 text-indigo-900 dark:text-accent-light border-accent-border shadow-sm font-semibold'
+                                : 'bg-surface/40 text-on-surface-secondary border-edge/80 hover:bg-surface-elevated/60 hover:text-on-surface'
                         }`}
                     >
                         <div className="flex items-center space-x-2">
@@ -213,8 +213,8 @@ export default function QuickFiltersSidebar({
                                     onClick={() => onSelectMonth(isSelected ? null : item.key)}
                                     className={`w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center justify-between cursor-pointer border group ${
                                         isSelected
-                                            ? 'bg-gradient-to-r from-indigo-600/25 to-purple-600/20 text-white border-accent-border shadow-md shadow-indigo-500/10'
-                                            : 'bg-surface/40 text-on-surface-secondary border-edge/80 hover:bg-surface-elevated/60 hover:border-edge-strong hover:text-white'
+                                            ? 'bg-indigo-500/20 text-indigo-950 dark:text-white border-accent-border shadow-md font-semibold'
+                                            : 'bg-surface/40 text-on-surface-secondary border-edge/80 hover:bg-surface-elevated/60 hover:border-edge-strong hover:text-on-surface'
                                     }`}
                                 >
                                     <div className="flex items-center space-x-2 min-w-0">

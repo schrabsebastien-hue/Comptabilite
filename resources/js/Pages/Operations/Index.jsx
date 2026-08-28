@@ -36,6 +36,12 @@ import {
 } from 'lucide-react';
 
 export default function Index({ operations, expenseTypes, filters, stats }) {
+    const [localOps, setLocalOps] = useState(operations);
+
+    useEffect(() => {
+        setLocalOps(operations);
+    }, [operations]);
+
     const [selectedIds, setSelectedIds] = useState([]);
     const [editingCell, setEditingCell] = useState(null); // { id, field }
     const [cellValues, setCellValues] = useState({});
@@ -264,19 +270,19 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
 
     // Unique values lists for Excel-style checkboxes
     const uniqueDates = useMemo(() => {
-        const set = new Set(operations.map((op) => op.date).filter(Boolean));
+        const set = new Set(localOps.map((op) => op.date).filter(Boolean));
         return Array.from(set).sort().reverse();
-    }, [operations]);
+    }, [localOps]);
 
     const uniqueLabels = useMemo(() => {
-        const set = new Set(operations.map((op) => op.label).filter(Boolean));
+        const set = new Set(localOps.map((op) => op.label).filter(Boolean));
         return Array.from(set).sort();
-    }, [operations]);
+    }, [localOps]);
 
     const uniqueComments = useMemo(() => {
-        const set = new Set(operations.map((op) => op.comment).filter(Boolean));
+        const set = new Set(localOps.map((op) => op.comment).filter(Boolean));
         return Array.from(set).sort();
-    }, [operations]);
+    }, [localOps]);
 
     // Items filtered INSIDE each Excel Popover list based on the popover search input
     const filteredExpenseTypesInPopover = useMemo(() => {
@@ -311,7 +317,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
 
     // Filter & Sort Operations in Main Table (based on selected checkboxes and global search)
     const filteredOperations = useMemo(() => {
-        return operations.filter((op) => {
+        return localOps.filter((op) => {
             // Month Filter (Visual shortcut from left sidebar YYYY-MM)
             if (selectedMonth) {
                 const opMonth = getYearMonthKey(op.date);
@@ -373,7 +379,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
             if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
             return 0;
         });
-    }, [operations, selectedMonth, globalSearch, columnFilters, sortConfig]);
+    }, [localOps, selectedMonth, globalSearch, columnFilters, sortConfig]);
 
     // Grouped Operations by Expense Type (Google Sheets Hierarchy)
     const groupedOperations = useMemo(() => {
@@ -528,10 +534,18 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
 
     // Inline field updates
     const handleExpenseTypeChange = (operationId, newExpenseTypeId) => {
+        const typeObj = expenseTypes.find((t) => String(t.id) === String(newExpenseTypeId)) || null;
+        setLocalOps((prev) =>
+            prev.map((op) =>
+                op.id === operationId
+                    ? { ...op, expense_type_id: newExpenseTypeId || null, expense_type: typeObj, is_validated: true }
+                    : op
+            )
+        );
         router.patch(
             `/operations/${operationId}`,
             { expense_type_id: newExpenseTypeId || null },
-            { preserveScroll: true }
+            { preserveScroll: true, preserveState: true }
         );
     };
 
@@ -542,12 +556,21 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
             return;
         }
 
+        setEditingCell(null);
+        setLocalOps((prev) =>
+            prev.map((op) =>
+                op.id === operationId
+                    ? { ...op, [field]: val, is_validated: true }
+                    : op
+            )
+        );
+
         router.patch(
             `/operations/${operationId}`,
             { [field]: val },
             {
                 preserveScroll: true,
-                onSuccess: () => setEditingCell(null),
+                preserveState: true,
             }
         );
     };
@@ -623,21 +646,27 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
     };
 
     const handleValidateSuggestion = (id) => {
-        router.patch(`/operations/${id}/validate`, {}, { preserveScroll: true });
+        setLocalOps((prev) =>
+            prev.map((op) => (op.id === id ? { ...op, is_validated: true } : op))
+        );
+        router.patch(`/operations/${id}/validate`, {}, { preserveScroll: true, preserveState: true });
     };
 
     const handleBulkValidateSuggestions = (idsToValidate) => {
         if (!idsToValidate || idsToValidate.length === 0) return;
-        router.post('/operations/bulk-validate', { ids: idsToValidate }, { preserveScroll: true });
+        setLocalOps((prev) =>
+            prev.map((op) => (idsToValidate.includes(op.id) ? { ...op, is_validated: true } : op))
+        );
+        router.post('/operations/bulk-validate', { ids: idsToValidate }, { preserveScroll: true, preserveState: true });
     };
 
     const unvalidatedAutoCount = useMemo(() => {
-        return operations.filter((op) => op.is_auto_categorized && !op.is_validated).length;
-    }, [operations]);
+        return localOps.filter((op) => op.is_auto_categorized && !op.is_validated).length;
+    }, [localOps]);
 
     const unvalidatedAutoIds = useMemo(() => {
-        return operations.filter((op) => op.is_auto_categorized && !op.is_validated).map((op) => op.id);
-    }, [operations]);
+        return localOps.filter((op) => op.is_auto_categorized && !op.is_validated).map((op) => op.id);
+    }, [localOps]);
 
     const handleDeleteOne = (id) => {
         setConfirmModal({
@@ -709,7 +738,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                             }
                             onKeyDown={(e) => handleCellKeyDown(e, op.id, 'date')}
                             onBlur={() => handleSaveCell(op.id, 'date')}
-                            className="bg-surface border border-indigo-500 text-white rounded px-2 py-1 text-xs focus:outline-none w-full"
+                            className="bg-surface border border-indigo-500 text-on-surface rounded px-2 py-1 text-xs focus:outline-none w-full"
                         />
                     ) : (
                         <div
@@ -720,10 +749,10 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                             className="cursor-pointer hover:bg-surface-elevated/80 px-1.5 py-1 rounded transition flex flex-col justify-center min-w-0"
                             title={op.original_date && op.original_date !== op.date ? `Date d'origine bancaire initiale : ${formatDate(op.original_date)}` : 'Cliquer pour modifier la date'}
                         >
-                            <span className="font-mono text-xs font-semibold text-slate-100">{formatDate(op.date)}</span>
+                            <span className="font-mono text-xs font-bold text-on-surface">{formatDate(op.date)}</span>
                             {op.original_date && op.original_date !== op.date && (
-                                <span className="inline-flex items-center space-x-1 text-[10px] text-indigo-300 font-mono font-medium tracking-tight mt-0.5" title={`Date d'origine bancaire initiale : ${formatDate(op.original_date)}`}>
-                                    <Calendar className="w-2.5 h-2.5 text-indigo-400 shrink-0" />
+                                <span className="inline-flex items-center space-x-1 text-[10px] text-indigo-700 dark:text-indigo-300 font-mono font-medium tracking-tight mt-0.5" title={`Date d'origine bancaire initiale : ${formatDate(op.original_date)}`}>
+                                    <Calendar className="w-2.5 h-2.5 text-accent shrink-0" />
                                     <span>Orig : {formatDate(op.original_date)}</span>
                                 </span>
                             )}
@@ -757,7 +786,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                 }
                                 onKeyDown={(e) => handleCellKeyDown(e, op.id, 'label')}
                                 onBlur={() => handleSaveCell(op.id, 'label')}
-                                className="w-full bg-surface border border-indigo-500 text-white rounded px-2 py-1 text-xs focus:outline-none"
+                                className="w-full bg-surface border border-indigo-500 text-on-surface rounded px-2 py-1 text-xs focus:outline-none"
                             />
                         </div>
                     ) : (
@@ -769,11 +798,11 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                             className="text-on-surface cursor-pointer hover:bg-surface-elevated/80 px-2 py-1 rounded transition flex items-center justify-between group gap-2 min-w-0 overflow-hidden"
                             title={op.label}
                         >
-                            <span className="truncate">{op.label}</span>
+                            <span className="truncate font-medium">{op.label}</span>
                             <div className="flex items-center space-x-1 shrink-0">
                                 {op.is_auto_categorized && !op.is_validated && (
                                     <span
-                                        className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-[10px] font-semibold"
+                                        className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30 text-[10px] font-semibold"
                                         title={`Catégorisation et intitulé suggérés automatiquement d'après vos saisies précédentes`}
                                     >
                                         <span>Pré-rempli</span>
@@ -781,10 +810,10 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                 )}
                                 {op.is_split && (
                                     <span
-                                        className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[10px] font-semibold"
+                                        className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30 text-[10px] font-semibold"
                                         title={`Opération scindée (Total scindé d'origine : ${formatAmount(op.split_total_amount)})`}
                                     >
-                                        <Split className="w-3 h-3 text-amber-400" />
+                                        <Split className="w-3 h-3 text-amber-500" />
                                         <span className="hidden sm:inline">Total : {formatAmount(op.split_total_amount)}</span>
                                     </span>
                                 )}
@@ -817,10 +846,13 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                         }}
                         onSave={(newComment) => {
                             setEditingCell(null);
+                            setLocalOps((prev) =>
+                                prev.map((o) => (o.id === op.id ? { ...o, comment: newComment, is_validated: true } : o))
+                            );
                             router.patch(
                                 `/operations/${op.id}`,
                                 { comment: newComment },
-                                { preserveScroll: true }
+                                { preserveScroll: true, preserveState: true }
                             );
                         }}
                         onCancel={() => setEditingCell(null)}
@@ -877,7 +909,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                 {/* Header Title Section */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight text-white flex items-center space-x-3 flex-wrap gap-y-2">
+                        <h1 className="text-2xl font-bold tracking-tight text-on-surface flex items-center space-x-3 flex-wrap gap-y-2">
                             <span>Liste des opérations</span>
                             <span className="text-xs px-2.5 py-1 rounded-full bg-indigo-500/10 text-accent border border-accent-border font-medium flex items-center space-x-1.5">
                                 <span>{currentStats.totalCount} / {stats.totalCount} affichée(s)</span>
@@ -909,14 +941,14 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                 {unvalidatedAutoCount > 0 && (
                     <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 flex items-center justify-between gap-4 shadow-sm">
                         <div className="flex items-center space-x-3">
-                            <div className="p-2 rounded-lg bg-emerald-500/20 text-emerald-400">
+                            <div className="p-2 rounded-lg bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
                                 <Check className="w-5 h-5" />
                             </div>
                             <div>
-                                <p className="text-sm font-semibold text-emerald-300">
+                                <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">
                                     {unvalidatedAutoCount} opération(s) pré-remplie(s) automatiquement
                                 </p>
-                                <p className="text-xs text-emerald-400/80">
+                                <p className="text-xs text-emerald-700 dark:text-emerald-400/80">
                                     Le type de dépense et l'intitulé ont été suggérés en fonction de vos remplissages précédents.
                                 </p>
                             </div>
@@ -935,7 +967,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                 <div className="flex flex-col lg:flex-row gap-6">
                     {/* Left Sidebar Panel: Quick Filters & Shortcuts */}
                     <QuickFiltersSidebar
-                        operations={operations}
+                        operations={localOps}
                         selectedMonth={selectedMonth}
                         onSelectMonth={setSelectedMonth}
                         expenseTypes={expenseTypes}
@@ -1068,7 +1100,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                 <button
                                     type="button"
                                     onClick={expandAllGroups}
-                                    className="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-surface-elevated/80 hover:bg-surface-overlay text-on-surface-secondary hover:text-white transition border border-edge-strong/80 cursor-pointer text-xs font-medium"
+                                    className="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-surface-elevated/80 hover:bg-surface-overlay text-on-surface-secondary hover:text-on-surface transition border border-edge-strong/80 cursor-pointer text-xs font-medium"
                                     title="Déplier toutes les catégories"
                                 >
                                     <ChevronsUpDown className="w-3.5 h-3.5 text-accent" />
@@ -1077,7 +1109,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                 <button
                                     type="button"
                                     onClick={collapseAllGroups}
-                                    className="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-surface-elevated/80 hover:bg-surface-overlay text-on-surface-secondary hover:text-white transition border border-edge-strong/80 cursor-pointer text-xs font-medium"
+                                    className="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-surface-elevated/80 hover:bg-surface-overlay text-on-surface-secondary hover:text-on-surface transition border border-edge-strong/80 cursor-pointer text-xs font-medium"
                                     title="Replier toutes les catégories"
                                 >
                                     <ChevronsDownUp className="w-3.5 h-3.5 text-accent" />
@@ -1105,7 +1137,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                             <>
                                 <button
                                     onClick={handleBulkClearComments}
-                                    className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/30 hover:bg-amber-500/25 transition cursor-pointer font-medium"
+                                    className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 hover:bg-amber-500/25 transition cursor-pointer font-medium"
                                     title="Effacer les commentaires des opérations sélectionnées"
                                 >
                                     <MessageSquareX className="w-3.5 h-3.5" />
@@ -1113,7 +1145,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                 </button>
                                 <button
                                     onClick={handleBulkDelete}
-                                    className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-rose-500/15 text-negative-light border border-rose-500/30 hover:bg-rose-500/25 transition cursor-pointer font-medium"
+                                    className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-rose-500/15 text-rose-700 dark:text-negative-light border border-rose-500/30 hover:bg-rose-500/25 transition cursor-pointer font-medium"
                                 >
                                     <Trash2 className="w-3.5 h-3.5" />
                                     <span>Supprimer ({selectedIds.length})</span>
@@ -1125,7 +1157,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                         {hasAnyActiveFilters && (
                             <button
                                 onClick={handleClearAllFilters}
-                                className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-surface-elevated text-on-surface-secondary hover:bg-surface-overlay hover:text-white transition cursor-pointer font-medium border border-edge-strong"
+                                className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-surface-elevated text-on-surface-secondary hover:bg-surface-overlay hover:text-on-surface transition cursor-pointer font-medium border border-edge-strong"
                             >
                                 <RotateCcw className="w-3.5 h-3.5 text-accent" />
                                 <span>Effacer filtres</span>
@@ -1142,7 +1174,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                 <FileSpreadsheet className="w-8 h-8" />
                             </div>
                             <div className="max-w-md mx-auto space-y-2">
-                                <h3 className="text-base font-semibold text-white">Aucune opération trouvée</h3>
+                                <h3 className="text-base font-semibold text-on-surface">Aucune opération trouvée</h3>
                                 <p className="text-xs text-on-surface-muted">
                                     {hasAnyActiveFilters
                                         ? 'Aucun élément ne correspond à vos filtres de colonnes ou recherche.'
@@ -1781,7 +1813,7 @@ export default function Index({ operations, expenseTypes, filters, stats }) {
                                                                         className="w-3.5 h-3.5 rounded-full shadow-sm ring-1 ring-white/20 shrink-0"
                                                                         style={{ backgroundColor: group.expenseType.color || '#6366f1' }}
                                                                     />
-                                                                    <span className="font-bold text-white text-sm tracking-wide truncate">
+                                                                    <span className="font-bold text-on-surface text-sm tracking-wide truncate">
                                                                         {group.expenseType.name}
                                                                     </span>
                                                                     <span className="text-[11px] px-2 py-0.5 rounded-full bg-surface-elevated text-on-surface-secondary border border-edge-strong font-medium shrink-0">

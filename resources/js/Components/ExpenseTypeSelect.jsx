@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { ChevronDown, Check, Search, X } from 'lucide-react';
 
 export default function ExpenseTypeSelect({
@@ -112,7 +112,7 @@ export default function ExpenseTypeSelect({
                                 <button
                                     type="button"
                                     onClick={() => setSearchQuery('')}
-                                    className="absolute right-2.5 top-2.5 text-on-surface-muted hover:text-white"
+                                    className="absolute right-2.5 top-2.5 text-on-surface-muted hover:text-on-surface"
                                 >
                                     <X className="w-3 h-3" />
                                 </button>
@@ -127,8 +127,8 @@ export default function ExpenseTypeSelect({
                             onClick={() => handleSelect(null)}
                             className={`w-full px-3 py-2 rounded-xl text-xs font-medium transition flex items-center justify-between cursor-pointer ${
                                 !value
-                                    ? 'bg-indigo-500/15 text-amber-300 font-semibold border border-accent-border'
-                                    : 'text-amber-300/80 hover:bg-surface-elevated/80 hover:text-amber-200'
+                                    ? 'bg-indigo-500/15 text-amber-800 dark:text-amber-300 font-semibold border border-accent-border'
+                                    : 'text-amber-700 dark:text-amber-300/80 hover:bg-surface-elevated/80 hover:text-amber-900 dark:hover:text-amber-200'
                             }`}
                         >
                             <div className="flex items-center space-x-2.5 truncate">
@@ -156,8 +156,8 @@ export default function ExpenseTypeSelect({
                                         onClick={() => handleSelect(type.id)}
                                         className={`w-full px-3 py-2 rounded-xl text-xs font-medium transition flex items-center justify-between cursor-pointer ${
                                             isSelected
-                                                ? 'bg-indigo-600/20 text-white font-semibold border border-accent-border shadow-sm'
-                                                : 'text-on-surface hover:bg-surface-elevated/90 hover:text-white'
+                                                ? 'bg-indigo-500/20 text-indigo-950 dark:text-white font-semibold border border-accent-border shadow-sm'
+                                                : 'text-on-surface hover:bg-surface-elevated/90 hover:text-on-surface'
                                         }`}
                                     >
                                         <div className="flex items-center space-x-2.5 truncate">

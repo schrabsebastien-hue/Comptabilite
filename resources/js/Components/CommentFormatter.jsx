@@ -81,7 +81,7 @@ export default function CommentFormatter({ value, onSave, onCancel, isEditing, o
     const renderFormattedHtml = (htmlContent) => {
         if (!htmlContent || !htmlContent.trim()) {
             return (
-                <span className="text-xs text-on-surface-faint/30 italic font-normal tracking-wide">
+                <span className="text-xs text-on-surface-muted/60 dark:text-on-surface-faint/50 italic font-normal tracking-wide">
                     Aucun commentaire
                 </span>
             );
@@ -94,7 +94,7 @@ export default function CommentFormatter({ value, onSave, onCancel, isEditing, o
 
         return (
             <div
-                className="text-xs text-slate-100 font-semibold leading-relaxed break-words"
+                className="text-xs text-on-surface font-semibold leading-relaxed break-words"
                 dangerouslySetInnerHTML={{ __html: cleanHtml }}
             />
         );
@@ -122,7 +122,7 @@ export default function CommentFormatter({ value, onSave, onCancel, isEditing, o
                     <button
                         type="button"
                         onClick={handleToggleBold}
-                        className="p-1 rounded text-on-surface-muted hover:text-white hover:bg-surface-elevated transition cursor-pointer font-bold"
+                        className="p-1 rounded text-on-surface-muted hover:text-on-surface hover:bg-surface-elevated transition cursor-pointer font-bold"
                         title="Mettre en gras (<b>)"
                     >
                         <Bold className="w-3.5 h-3.5" />
@@ -130,7 +130,7 @@ export default function CommentFormatter({ value, onSave, onCancel, isEditing, o
                     <button
                         type="button"
                         onClick={handleToggleItalic}
-                        className="p-1 rounded text-on-surface-muted hover:text-white hover:bg-surface-elevated transition cursor-pointer italic"
+                        className="p-1 rounded text-on-surface-muted hover:text-on-surface hover:bg-surface-elevated transition cursor-pointer italic"
                         title="Mettre en italique (<i>)"
                     >
                         <Italic className="w-3.5 h-3.5" />
@@ -175,7 +175,7 @@ export default function CommentFormatter({ value, onSave, onCancel, isEditing, o
                     <button
                         type="button"
                         onClick={onCancel}
-                        className="p-1 rounded bg-surface-elevated text-on-surface-muted hover:text-white transition cursor-pointer"
+                        className="p-1 rounded bg-surface-elevated text-on-surface-muted hover:text-on-surface transition cursor-pointer"
                         title="Annuler"
                     >
                         <X className="w-3.5 h-3.5" />
@@ -191,7 +191,7 @@ export default function CommentFormatter({ value, onSave, onCancel, isEditing, o
                 onChange={(e) => setDraft(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Rédiger un commentaire..."
-                className="w-full bg-surface border border-indigo-500/60 text-white rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 shadow-inner"
+                className="w-full bg-surface border border-indigo-500/60 text-on-surface rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 shadow-inner"
             />
 
             {/* Live Preview */}

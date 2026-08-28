@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { 
     X, 
     Calculator, 
@@ -84,7 +84,7 @@ export default function CellAuditModal({
                         </div>
                         <div>
                             <div className="flex items-center space-x-2">
-                                <h3 className="font-bold text-white text-base">
+                                <h3 className="font-bold text-on-surface text-base">
                                     {audit.label || rowRule?.label}
                                 </h3>
                                 <span className="text-xs px-2 py-0.5 rounded-full bg-surface-elevated text-on-surface-secondary border border-edge-strong font-medium">
@@ -101,7 +101,7 @@ export default function CellAuditModal({
 
                     <button
                         onClick={onClose}
-                        className="p-1.5 rounded-xl text-on-surface-muted hover:text-white hover:bg-surface-elevated transition-colors cursor-pointer"
+                        className="p-1.5 rounded-xl text-on-surface-muted hover:text-on-surface hover:bg-surface-elevated transition-colors cursor-pointer"
                     >
                         <X className="w-5 h-5" />
                     </button>
@@ -242,7 +242,7 @@ export default function CellAuditModal({
                                 onOpenRuleSettings(rowRule);
                             }
                         }}
-                        className="inline-flex items-center space-x-2 px-3 py-2 rounded-xl bg-surface-elevated hover:bg-surface-overlay text-on-surface hover:text-white text-xs font-medium transition-colors cursor-pointer border border-edge-strong"
+                        className="inline-flex items-center space-x-2 px-3 py-2 rounded-xl bg-surface-elevated hover:bg-surface-overlay text-on-surface hover:text-on-surface text-xs font-medium transition-colors cursor-pointer border border-edge-strong"
                     >
                         <Settings className="w-3.5 h-3.5 text-cyan-400" />
                         <span>Modifier la formule de cette ligne</span>

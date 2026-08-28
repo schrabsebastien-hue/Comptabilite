@@ -48,23 +48,24 @@ class OperationController extends Controller
 
         $expenseTypes = ExpenseType::orderBy('position')->orderBy('name')->get();
 
-        // Compute split groups info
-        $splitGroups = Operation::whereNotNull('parent_id')
-            ->orWhereIn('id', function ($q) {
-                $q->select('parent_id')->from('operations')->whereNotNull('parent_id');
-            })
-            ->get()
-            ->groupBy(function ($op) {
-                return $op->parent_id ?: $op->id;
-            });
-
+        // Compute split groups info efficiently
         $splitTotalsMap = [];
-        foreach ($splitGroups as $rootId => $groupOps) {
-            if ($groupOps->count() > 1) {
-                $splitTotalsMap[$rootId] = [
-                    'count' => $groupOps->count(),
-                    'total' => (float) $groupOps->sum('amount'),
-                ];
+        $parentIds = Operation::whereNotNull('parent_id')->pluck('parent_id')->unique()->filter()->values()->all();
+        if (!empty($parentIds)) {
+            $splitGroups = Operation::whereIn('id', $parentIds)
+                ->orWhereIn('parent_id', $parentIds)
+                ->get(['id', 'parent_id', 'amount'])
+                ->groupBy(function ($op) {
+                    return $op->parent_id ?: $op->id;
+                });
+
+            foreach ($splitGroups as $rootId => $groupOps) {
+                if ($groupOps->count() > 1) {
+                    $splitTotalsMap[$rootId] = [
+                        'count' => $groupOps->count(),
+                        'total' => (float) $groupOps->sum('amount'),
+                    ];
+                }
             }
         }
 
